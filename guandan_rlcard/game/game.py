@@ -82,6 +82,12 @@ class GuandanGame:
         player = self.players[self.round.current_player]
         round_completed = False
 
+        # A finished player may be queried for wind-follow turns; whatever
+        # the agent returns then must not be played (the protocol asks for
+        # [], but agents are not trusted on this).
+        if action and not player.current_hand:
+            action = []
+
         if action:
             _, round_completed = self.round.proceed_round(player, action)
             if self.round.game_over:
@@ -145,6 +151,13 @@ class GuandanGame:
             state['min_steps_estimation'] = {
                 pid: estimate_min_steps(hand, self.cur_rank)
                 for pid, hand in all_hands.items()}
+            # Positional view of the hidden hands (used by the DanZero+
+            # baseline's perfect-information value features).
+            state['others_hands'] = {
+                'player_down': all_hands[(player_id + 1) % 4],
+                'player_opp': all_hands[(player_id + 2) % 4],
+                'player_up': all_hands[(player_id + 3) % 4],
+            }
         return state
 
     # ------------------------------------------------------------------

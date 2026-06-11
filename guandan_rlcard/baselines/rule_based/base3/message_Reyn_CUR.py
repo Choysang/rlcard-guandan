@@ -1,7 +1,7 @@
 #Reyn_AI 2.0.0 采用加权思想全新改版
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 
@@ -112,68 +112,68 @@ def get_remain_VAL(handCards_S,handCards_H,handCards_C,handCards_D,handCards_A,h
 #本函数负责计算敌人手牌的价值-没用到
 def get_opp_VAL(card,curRank):
     if card[0] == 'Single':
-        _debug_print('Reyn_AI Tip 确认敌人Action为Single形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Single形式')
         val = 0
         val += get_point_val(card[2][0],curRank)
-        _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
         return val
     if card[0] == 'Pair':
-        _debug_print('Reyn_AI Tip 确认敌人Action为Pair形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Pair形式')
         val = 20
         val += get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
-        _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
         return val
     if card[0] == 'Trips':
-        _debug_print('Reyn_AI Tip 确认敌人Action为Trips形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Trips形式')
         val = 100
         val += get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += 5 * point_val[get_num(card[1])]
-        _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人的出牌权值为',val)
         return val
     if card[0] == 'Bomb' and len(card[2]) == 4:
-        _debug_print('Reyn_AI Tip 确认敌人Action为Bomb_4形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Bomb_4形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += get_point_val(card[2][3],curRank)
         val += 100 * point_val[get_num(card[1])]
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'Bomb' and len(card[2]) == 5:
-        _debug_print('Reyn_AI Tip 确认敌人Action为Bomb形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Bomb形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += get_point_val(card[2][3],curRank)
         val += get_point_val(card[2][4],curRank)
         val += 150 * point_val[get_num(card[1])]
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'Straight':
-        _debug_print('Reyn_AI Tip 确认敌人Action为Straight形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为Straight形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += get_point_val(card[2][3],curRank)
         val += get_point_val(card[2][4],curRank)
         val += 300
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'ThreeWithTwo':
-        _debug_print('Reyn_AI Tip 确认敌人Action为ThreeWithTwo形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为ThreeWithTwo形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += get_point_val(card[2][3],curRank)
         val += get_point_val(card[2][4],curRank)
         val += 200
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'ThreePair':
-        _debug_print('Reyn_AI Tip 确认敌人Action为ThreePair形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为ThreePair形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
@@ -181,10 +181,10 @@ def get_opp_VAL(card,curRank):
         val += get_point_val(card[2][4],curRank)
         val += get_point_val(card[2][5],curRank)
         val += 150
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'TwoTrips':
-        _debug_print('Reyn_AI Tip 确认敌人Action为TwoTrips形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为TwoTrips形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
@@ -192,17 +192,17 @@ def get_opp_VAL(card,curRank):
         val += get_point_val(card[2][4],curRank)
         val += get_point_val(card[2][5],curRank)
         val += 120
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     if card[0] == 'StraightFlush':
-        _debug_print('Reyn_AI Tip 确认敌人Action为StraightFlush形式')
+        # _debug_print('Reyn_AI Tip 确认敌人Action为StraightFlush形式')
         val = get_point_val(card[2][0],curRank)
         val += get_point_val(card[2][1],curRank)
         val += get_point_val(card[2][2],curRank)
         val += get_point_val(card[2][3],curRank)
         val += get_point_val(card[2][4],curRank)
         val += 180 * point_val[get_num(card[1])]
-        _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
+        # _debug_print('Reyn_AI Tip 敌人出牌权值为',val)
         return val
     return 3000
 
@@ -1745,7 +1745,7 @@ def get_VAL_OPP(handCards_S,handCards_H,handCards_C,handCards_D,handCards_A,hand
             if card[2][5][0] == 'H':
                 handCards_R[2] -= 1
         val += get_remain_VAL(handCards_S,handCards_H,handCards_C,handCards_D,handCards_A,handCards_R,handCards_K,curRank)
-        _debug_print('Reyn_AI Tip 已计算出该操作权重为',val)
+        # _debug_print('Reyn_AI Tip 已计算出该操作权重为',val)
         return val
     if card[0] == 'TwoTrips':
         # _debug_print('Reyn_AI Tip 确认该Action为TwoTrips形式')
@@ -1986,12 +1986,7 @@ def get_num(point):
         return 11
     elif point == 'K':
         return 12
-    elif point=='JOKER':
-        return 13
-    elif point == 'B' or point == 'R':
-        # FIX: the four-joker bomb action carries key rank 'R' (and
-        # joker singles/pairs carry 'B'/'R'); int('R') used to crash
-        # here. Map them to the JOKER slot (point_val[13] == 100).
+    elif point=='JOKER' or point in ['B', 'R']:
         return 13
     else:
         return int(point) - 1
@@ -2065,9 +2060,9 @@ def check_patterns_fri(message,action):
     elif action_patterns =='Straight':
         if action_point == 12:
             action_point = 0
-        _debug_print(action)
-        _debug_print(action_point)
-        _debug_print(handcard_list)
+        # _debug_print(action)
+        # _debug_print(action_point)
+        # _debug_print(handcard_list)
         if handcard_list[action_point]==1 and handcard_list[action_point+1]==1 and handcard_list[action_point+2]==1 and handcard_list[action_point+3]==1 and handcard_list[action_point+4]==1 :
             return 1
         else:

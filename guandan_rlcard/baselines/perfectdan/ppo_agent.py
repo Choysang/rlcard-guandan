@@ -15,7 +15,7 @@ import random
 import collections
 
 # 导入模型和状态编码器
-from guandan_rlcard.baselines.ppo.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
+from guandan_rlcard.baselines.perfectdan.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
 
 # 掼蛋游戏卡牌等级定义
 CARD_RANK = ['2','3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K',
@@ -1330,10 +1330,10 @@ class PPOMemory:
         idx = self.position
         
         if self.states is not None and state is not None:
-            self.states[idx] = state.cpu().numpy()
+            self.states[idx] = state.detach().cpu().numpy()
         
         if history_state is not None:
-            self.history_states_data[idx] = history_state.cpu().numpy()
+            self.history_states_data[idx] = history_state.detach().cpu().numpy()
             
         self.actions[idx] = action
         self.log_probs[idx] = log_prob
@@ -1342,21 +1342,21 @@ class PPOMemory:
         self.dones[idx] = done
         
         if self.action_masks is not None and action_mask is not None:
-            self.action_masks[idx] = action_mask.cpu().numpy()
+            self.action_masks[idx] = action_mask.detach().cpu().numpy()
             
         if self.perfect_info is not None and perfect_info is not None:
-            self.perfect_info[idx] = perfect_info.cpu().numpy()
+            self.perfect_info[idx] = perfect_info.detach().cpu().numpy()
             
         if action_features is not None:
-            self.action_features_data[idx] = [feat.cpu().numpy() for feat in action_features]
+            self.action_features_data[idx] = [feat.detach().cpu().numpy() for feat in action_features]
             
         if initial_policy_hidden is not None:
             h, c = initial_policy_hidden
-            self.initial_policy_hidden_data[idx] = (h.cpu().numpy(), c.cpu().numpy())
+            self.initial_policy_hidden_data[idx] = (h.detach().cpu().numpy(), c.detach().cpu().numpy())
             
         if initial_value_hidden is not None:
             h, c = initial_value_hidden
-            self.initial_value_hidden_data[idx] = (h.cpu().numpy(), c.cpu().numpy())
+            self.initial_value_hidden_data[idx] = (h.detach().cpu().numpy(), c.detach().cpu().numpy())
             
         # 存储 raw_state
         if raw_state is not None:

@@ -30,3 +30,6 @@ runs/
 Thumbs.db
 .idea/
 .vscode/
+
+# staging area for raw baseline drops (integrated selectively)
+/baselines/

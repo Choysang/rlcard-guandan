@@ -29,37 +29,6 @@ str_to_ind = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '
 str_to_flo = ['S', 'H', 'C', 'D']
 
 
-Guandan_Player_PROMPT = '''
-Now it is your turn to act. The current game state is described as follows:
-
-```Current state information:
-Player IDs are [0, 1, 2, 3], your ID is {id}, your teammate's ID is {teammate_id}, and your team ID is {teamid}.
-Currently, Team 0's rank is {team0_rank}, and Team 1's rank is {team1_rank}.
-You are now playing against Team {play_team} with a rank of {cur_rank}, and the wild card is 'H{cur_rank}'.
-```
-
-```Your current hand card:
-{current_hand}
-```
-
-```Each player's remaining hand count (in order of player ID):
-{num_cards_left}
-```
-
-```All the played cards:
-{played_cards}
-```
-
-```Recent action history (Listed in chronological order from earliest to latest, [player ID, action]):
-{trace}
-```
-
-During the game, you must adhere to the following unbreakable rules:
-- Strictly follow the action format, where the specific list of cards includes the same number of cards as required by the card type.
-- The cards included in the action must be within your current hand cards.
-
-'''
-
 class Action(object):
 
     def __init__(self):
@@ -75,6 +44,8 @@ class Action(object):
 class Base7Agent(Player):
     ''' Baseline 7 agent.
     '''
+    name = 'Base7'
+    
     def __init__(self, player_id, np_random):
         super().__init__(player_id, np_random)
         self.action = Action()

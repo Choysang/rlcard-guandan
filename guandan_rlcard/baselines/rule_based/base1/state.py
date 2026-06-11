@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 

@@ -4,7 +4,6 @@
 
 
 from guandan_rlcard.game.player import GuandanPlayer as Player
-from guandan_rlcard.agents.base_agent import GuandanAgent
 import json
 import os
 
@@ -119,22 +118,19 @@ class Action(object):
         return act
 
 
-# FIX: GenAgent had no tribute_act/back_act and crashed at the
-# tribute phase; GuandanAgent supplies rule-following defaults.
-class GenAgent(GuandanAgent):
+class GenAgent(Player):
     ''' Generate data agent.
     '''
     def __init__(self, player_id, np_random, output_path=None):
         super().__init__(player_id, np_random)
+        # FIX: dataset path was hardcoded to a developer machine.
+        self.output_path = (output_path
+                            or os.environ.get('GUANDAN_DATASET_PATH',
+                                              'guandan_dataset.jsonl'))
         self.action = Action()
         self.my_pos = self.player_id                   # 增加了一个属性，用来记录自己的位置
         self.mate_pos = (self.my_pos + 2) % 4          # 增加了一个属性，用来记录队友的位置
         self.use_raw = True
-        # FIX: dataset path was hardcoded to a developer machine; make it
-        # configurable (argument > env var > local default).
-        self.output_path = (output_path
-                            or os.environ.get('GUANDAN_DATASET_PATH',
-                                              'guandan_dataset.jsonl'))
 
     def step(self, state):
         if not state['actions']:
@@ -178,7 +174,7 @@ class GenAgent(GuandanAgent):
         msg = self.parse(state)
         act = self.action.parse(msg, self.mate_pos)
         
-        meta_data = {'prompt': prompt, "response": str(act), "legal_list": str(legal_actions)}
+        meta_data = {'prompt': prompt, "legal_list": str(legal_cardtype)}
         with open(self.output_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(meta_data, ensure_ascii=False) + "\n")
         
@@ -200,6 +196,75 @@ class GenAgent(GuandanAgent):
             
         return msg
 
+    def tribute_act(self, actionLists, rank):
+        """根据合法动作集选择动作执行"""
+        zero_s_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]       # 2 -- 王
+        zero_h_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        zero_c_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]          # 2 -- A
+        zero_d_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        zero_number_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]     # 2 -- A
+        zero_rank_cards = [0, 0]            # 非红桃 红桃
+
+        has = [zero_s_cards, zero_h_cards, zero_c_cards, zero_d_cards, zero_number_cards, zero_rank_cards]
+        now_rank = rank           # 获取等级
+
+        for card in self.current_hand_str:       # 统计当前手牌
+            if card[1] == now_rank and card[0] == 'H':
+                has[5][1] += 1
+            elif card[1] == now_rank and card[0] != 'H':
+                has[5][0] += 1
+            card_to_list(card, has, 1)
+
+        act_score = []                  # 存放所有行动选项的评分
+        for action in actionLists:
+            values = []
+            for one in action[2]:
+                values.append(getval(one, now_rank, has))
+            value = max(values)
+            poss = 1
+            score = cac(1, value, poss)
+            act_score.append(score)
+            
+        act_index = act_score.index(max(act_score))
+        act = actionLists[act_index]
+        self.execute_tribute(act)
+        
+        return act
+    
+    def back_act(self, actionLists, rank, tribute_result):
+        """根据合法动作集选择动作执行"""
+        zero_s_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]       # 2 -- 王
+        zero_h_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        zero_c_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]          # 2 -- A
+        zero_d_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        zero_number_cards = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]     # 2 -- A
+        zero_rank_cards = [0, 0]            # 非红桃 红桃
+
+        has = [zero_s_cards, zero_h_cards, zero_c_cards, zero_d_cards, zero_number_cards, zero_rank_cards]
+        now_rank = rank           # 获取等级
+
+        for card in self.current_hand_str:       # 统计当前手牌
+            if card[1] == now_rank and card[0] == 'H':
+                has[5][1] += 1
+            elif card[1] == now_rank and card[0] != 'H':
+                has[5][0] += 1
+            card_to_list(card, has, 1)
+
+        act_score = []                  # 存放所有行动选项的评分
+        for action in actionLists:
+            values = []
+            for one in action[2]:
+                values.append(getval(one, now_rank, has))
+            value = max(values)
+            poss = 1
+            score = cac(1, value, poss)
+            act_score.append(score)
+        
+        act_index = act_score.index(max(act_score))
+        act = actionLists[act_index]
+        self.execute_back(act)
+        
+        return act
 
 def card_to_list(card, my_list, step):
     if card == 'RJ':

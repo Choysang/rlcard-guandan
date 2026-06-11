@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "guandan-rlcard"
+name = "rlcard-guandan"
 version = "0.1.0"
 description = "An open Guandan (掼蛋) reinforcement learning environment built on RLCard"
 readme = "README.md"
@@ -27,7 +27,7 @@ llm = ["openai"]
 dev = ["pytest"]
 
 [project.urls]
-Repository = "https://github.com/Choysang/guandan-rlcard"
+Repository = "https://github.com/Choysang/rlcard-guandan"
 
 [tool.setuptools.packages.find]
 include = ["guandan_rlcard*"]

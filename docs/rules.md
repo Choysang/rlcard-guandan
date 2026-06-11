@@ -99,3 +99,18 @@ Infrastructure fixes relative to the original fork:
   hook that fires after every deal.
 * No `sys.path` hacks, no hardcoded local paths, no stdout
   reconfiguration at import time, no matplotlib import in the engine.
+
+Second-round fixes (baseline collection integration):
+
+* Engine: actions returned by an already-finished player are ignored
+  (the wind-follow protocol asks for ``[]``, but agents are not trusted
+  on this; one agent answered PASS and corrupted the finish order), and
+  a player can no longer be recorded twice in the finish order.
+* `danzero`: the value-net checkpoint path was hardcoded to a developer
+  machine; it now defaults to the packaged ``q_network.ckpt`` and can be
+  overridden with ``GUANDAN_DANZERO_CKPT``.
+* `dmc` / `danzero_plus`: agents can be constructed standalone (they
+  then play with untrained weights until a model is supplied).
+* `perfectdan`: tensor-to-numpy conversions detach first (torch 2.x).
+* The engine exposes ``others_hands`` (positional perfect-info view)
+  used by the DanZero+ value features.

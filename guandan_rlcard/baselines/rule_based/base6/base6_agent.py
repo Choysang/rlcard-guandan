@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 
@@ -241,6 +241,8 @@ class Action(object):
 class Base6Agent(Player):
     ''' Baseline 6 agent.
     '''
+    name = 'Base6'
+    
     def __init__(self, player_id, np_random):
         super().__init__(player_id, np_random)
         self.action = Action()
@@ -248,11 +250,8 @@ class Base6Agent(Player):
         self.begin = True
     
     def step(self, state):
-        #_debug_print(f"[CHECK-2] agent 收到手牌：{state['current_hand']}")
-        #_debug_print(f"[CHECK-2] agent 收到动作列表：{state['actions']}")
         if not state['actions']:
             return []
-        
         msg = self.parse(state)
         act_index = self.action.parse(msg, self.player_id)
 
@@ -260,17 +259,8 @@ class Base6Agent(Player):
 
         final_action = state['actions'][act_index]
         #_debug_print("我打出来的下标是：", act_index)
-
-        hand = state.get('raw_hand', [])
-        if final_action in msg["actionList"]:
-            #_debug_print("合法动作集是：", msg["actionList"])
-            #_debug_print("返回的动作是", final_action)
-            return final_action
-        else:
-            _debug_print(f"[Agent警告] 选中动作非法：{final_action}")
-            _debug_print(f"[DEBUG] 合法动作列表共 {len(msg['actionList'])} 个，示例：{msg['actionList'][:3]}")
-            return final_action
-
+        return final_action
+    
     def parse(self, state):
         assert type(state) == dict
         msg = {}

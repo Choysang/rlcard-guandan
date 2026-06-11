@@ -1,0 +1,9 @@
+import os
+
+from .dmc import train
+from .arguments import parser
+
+if __name__ == '__main__':
+    flags = parser.parse_args()
+    os.environ["CUDA_VISIBLE_DEVICES"] = flags.gpu_devices
+    train(flags)

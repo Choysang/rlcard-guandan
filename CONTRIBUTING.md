@@ -5,8 +5,8 @@ Thanks for your interest in improving guandan-rlcard!
 ## Getting set up
 
 ```bash
-git clone https://github.com/Choysang/guandan-rlcard.git
-cd guandan-rlcard
+git clone https://github.com/Choysang/rlcard-guandan.git
+cd rlcard-guandan
 pip install -e ".[dev]"
 pytest
 ```

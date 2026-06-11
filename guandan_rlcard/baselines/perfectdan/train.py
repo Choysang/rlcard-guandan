@@ -24,8 +24,8 @@ current_file = os.path.abspath(__file__)
 #获取父目录的父目录(上两级目录)
 grandparent_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
 from guandan_rlcard.envs.guandan_env import GuandanEnv
-from guandan_rlcard.baselines.ppo.ppo_agent import PPOGuandanAgent, RewardShaper, PPOMemory
-from guandan_rlcard.baselines.ppo.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
+from guandan_rlcard.baselines.perfectdan.ppo_agent import PPOGuandanAgent, RewardShaper, PPOMemory
+from guandan_rlcard.baselines.perfectdan.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
 
 # 导入规则对手模型用于评估
 from guandan_rlcard.baselines.random_agent import RandomAgent

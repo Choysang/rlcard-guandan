@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 
@@ -64,6 +64,8 @@ class Action(object):
 class Base3Agent(Player):
     ''' Baseline 3 agent.
     '''
+    name = 'Base3'
+    
     def __init__(self, player_id, np_random):
         super().__init__(player_id, np_random)
         self.action = Action()

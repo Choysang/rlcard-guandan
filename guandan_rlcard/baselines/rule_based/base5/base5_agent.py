@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 
@@ -34,7 +34,7 @@ class Action(object):
                 self.act = passive(self.action, msg["handCards"], msg["curRank"], msg['curAction'], msg["greaterAction"],mypos,
                                         msg["greaterPos"],remaincards, numofplayers,pass_num,my_pass_num)
             except Exception as e:
-                _debug_print(str(e))
+                # _debug_print(str(e))
                 self.act = 1
 
         elif msg["greaterPos"] == mypos or msg["greaterPos"] == -1:
@@ -45,7 +45,7 @@ class Action(object):
                                 history['3']["remain"]]
                 self.act = active(self.action, msg["handCards"], msg["curRank"],numofplayers,mypos,remaincards)
             except Exception as e:
-                _debug_print(e)
+                # _debug_print(e)
                 self.act = 0
         else:
             _debug_print(msg["handCards"])
@@ -59,6 +59,8 @@ class Action(object):
 class Base5Agent(Player):
     ''' Baseline 5 agent.
     '''
+    name = 'Base5'
+    
     def __init__(self, player_id, np_random):
         super().__init__(player_id, np_random)
         self.Action = Action()

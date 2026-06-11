@@ -1,6 +1,6 @@
 def _debug_print(*args, **kwargs):
-    # Debug output from the original research code, silenced for the
-    # open-source release. Re-enable by printing here if needed.
+    # Debug output from the original research code, silenced for
+    # the open-source release.
     pass
 
 
@@ -93,7 +93,7 @@ class PlayCard():
                             (bestPlay == [] or CompareRank().Smaller(type, rank, card, bestPlay, curRank)))):
                             maxValue = thisHandValue + restValue
                             bestPlay = {"action": action, "type": type, "rank": rank}
-                            _debug_print(bestPlay, maxValue)
+                            # _debug_print(bestPlay, maxValue)
 
             #try additional list
             for action in additionalActionList:

@@ -12,7 +12,7 @@ from .utils import plot_evaluation_results, plot_rule_models_comparison
 from guandan_rlcard.game.player import GuandanPlayer
 from guandan_rlcard.envs.guandan_env import GuandanEnv
 # 导入模型和状态编码器 - 更新导入
-from guandan_rlcard.baselines.ppo.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
+from guandan_rlcard.baselines.perfectdan.models import GuandanLSTMPolicyNetwork, GuandanValueNetwork, OptimizedGuandanStateEncoder
 
 # 导入规则模型
 from guandan_rlcard.baselines.random_agent import RandomAgent

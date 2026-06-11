@@ -351,7 +351,8 @@ class GuandanRound:
             self.global_turn_count += 1
             self.turn_winner = last_non_pass_player
 
-        if len(player.current_hand) == 0:
+        if len(player.current_hand) == 0 and \
+                player.player_id not in self.result:
             self.result[self.win_count] = player.player_id
             self.win_count += 1
             if self.win_count == 2 and \

@@ -1,8 +1,8 @@
-# guandan-rlcard
+# rlcard-guandan
 
-**An open Guandan (掼蛋) environment for reinforcement learning and LLM agents, built on [RLCard](https://github.com/datamllab/rlcard).**
+**An open Guandan (掼蛋) environment for reinforcement learning and LLM agents, built on [RLCard](https://github.com/datamllab/rlcard) — with the public Guandan agents collected as ready-to-run baselines.**
 
-掼蛋开放式强化学习环境 —— 完整暴露发牌、进还贡与每一步交互，方便调试、训练与 LLM 接入。
+掼蛋开放式强化学习环境 —— 完整暴露发牌、进还贡与每一步交互；汇集市面公开的掼蛋智能体作为统一基线。
 
 Guandan is a four-player, two-team climbing card game played with two
 full decks (108 cards), hugely popular in China. Teams race from level 2
@@ -10,6 +10,21 @@ to level A; each deal ends with a tribute phase that feeds into the
 next. The hidden information, the wildcard (red-heart level card) and
 the team play make it a challenging benchmark for multi-agent RL and
 for LLM decision making.
+
+## Motivation · 项目初衷
+
+Existing Guandan environments (notably the AI-competition judge) are
+black boxes: you submit an agent and get results, with no way to inspect
+states, replay decisions or shape training signals. This project was
+built to fix that for research:
+
+1. **An open engine** - every state, action and the tribute phase are
+   plain Python data you can log, replay and debug.
+2. **One home for the public agents** - the top-8 rule agents of the
+   1st China AI Guandan Competition, plus the DanZero / DanZero+ paper
+   algorithms, re-interfaced to run (and be trained) here.
+3. **A place to share new algorithms** - including PerfectDan, the
+   author's own PPO self-play agent.
 
 ## Why "open"? · 为什么是开放式环境
 
@@ -23,7 +38,8 @@ Python data**:
   tribute phase (进贡/还贡) is also driven by agent decisions and fully
   observable.
 * With `perfect_info=True` (default) every state additionally carries
-  **all four hands** and per-hand step estimates.
+  **all four hands**, a positional `others_hands` view and per-hand step
+  estimates.
 
 > ⚠️ **Perfect information warning** · 完美信息提醒
 > By default `state['all_players_hands']` exposes every hand. This is by
@@ -39,10 +55,10 @@ an agent makes can be logged, replayed and turned into an LLM prompt.
 ## Installation · 安装
 
 ```bash
-git clone https://github.com/Choysang/guandan-rlcard.git
-cd guandan-rlcard
+git clone https://github.com/Choysang/rlcard-guandan.git
+cd rlcard-guandan
 pip install -e .            # core (rlcard + numpy)
-pip install -e ".[ppo]"     # + torch, for the PPO baseline
+pip install -e ".[ppo]"     # + torch, for danzero / dmc / danzero+ / perfectdan
 pip install -e ".[llm]"     # + openai, for the LLM agent
 pip install -e ".[dev]"     # + pytest
 ```
@@ -59,12 +75,12 @@ from guandan_rlcard.baselines import get_agent_class
 env = guandan_rlcard.make({'seed': 42})          # or rlcard.make('guandan')
 
 Base5 = get_agent_class('base5')
-Random = get_agent_class('random')
+Danzero = get_agent_class('danzero')             # pretrained, needs torch
 env.set_agents([
-    Base5(0, np.random.RandomState(0)),          # seats 0/2 = team 0
-    Random(1, np.random.RandomState(1)),         # seats 1/3 = team 1
-    Base5(2, np.random.RandomState(2)),
-    Random(3, np.random.RandomState(3)),
+    Danzero(0, np.random.RandomState(0)),        # seats 0/2 = team 0
+    Base5(1, np.random.RandomState(1)),          # seats 1/3 = team 1
+    Danzero(2, np.random.RandomState(2)),
+    Base5(3, np.random.RandomState(3)),
 ])
 
 trajectories, payoffs = env.run()                # one full episode (to level A)
@@ -76,9 +92,29 @@ Or use the ready-made scripts:
 
 ```bash
 python examples/run_rule_match.py --team0 base7 --team1 base5 --episodes 10
-python examples/run_llm_match.py  --opponent base5 --episodes 1   # needs API key env vars
+python examples/run_rule_match.py --team0 danzero --team1 base7 --episodes 5
+python examples/run_llm_match.py  --opponent base5 --episodes 1   # see docs/llm_guide.md
 python examples/generate_dataset.py --episodes 10 --output dataset/base7.jsonl
 ```
+
+LLM agents need an API key **via environment variables** - nothing is
+hardcoded. Step-by-step setup (key placement, providers, full run
+commands): **[docs/llm_guide.md](docs/llm_guide.md)**.
+
+## Baselines · 基线智能体
+
+All baselines are addressable by name through
+`guandan_rlcard.baselines.get_agent_class(name)`.
+
+| name | type | source · 来源 | notes |
+|---|---|---|---|
+| `random` | random | - | weakest reference |
+| `base1`..`base8` | rule-based | **top-8 entries of the 1st China AI Guandan Competition** (首届中国人工智能掼蛋算法大赛前八名) | re-interfaced for this env; `base7` strongest in our runs, `base2` strong but slow |
+| `danzero` | RL (DMC), pretrained | DanZero ([arXiv:2210.17087](https://arxiv.org/abs/2210.17087)) | ships `q_network.ckpt` and works out of the box; beats the rule baselines |
+| `dmc` | training framework | DanZero-style distributed Deep Monte-Carlo | train your own value net (`baselines/dmc/train.py`); fresh agents play with random weights |
+| `danzero_plus` | RL (PPO) framework | DanZero+ ([arXiv:2312.02561](https://arxiv.org/abs/2312.02561)) | PPO on top of the DanZero framework, incl. an imperfect-information variant |
+| `perfectdan` | RL (PPO), author's algorithm | **this project** | decoupled LSTM policy/value PPO self-play; in our experiments it reaches high win rates against both the rule baselines and DanZero. Pretrained weights: see GitHub Releases |
+| `llm` | LLM | this project | prompts any OpenAI-compatible model; [docs/llm_guide.md](docs/llm_guide.md) |
 
 ## State and action format · 状态与动作格式
 
@@ -103,7 +139,7 @@ the wind-follow turn - return `[]`), `trace`, `played_cards`,
 `remain_cards`, `rank_list`, `play_team`, `greaterPos`/`greaterAction`,
 `num_cards_left`, `last_oracle`/`current_oracle` (team step-estimate
 difference, refreshed per trick), and with perfect info also
-`all_players_hands` and `min_steps_estimation`.
+`all_players_hands`, `others_hands` and `min_steps_estimation`.
 
 **Payoffs** follow the RLCard convention: `env.run()` returns
 `(trajectories, payoffs)` with `+1` per player on the team that passed
@@ -126,18 +162,6 @@ class MyAgent(GuandanAgent):
 (`tribute_act` pays the forced biggest card, `back_act` returns the
 smallest legal card); override them for smarter tribute play.
 
-## Baselines · 基线智能体
-
-| name | class | type | notes |
-|---|---|---|---|
-| `random` | `RandomAgent` | random | weakest reference |
-| `base1`..`base8` | `Base1Agent`.. | rule-based | eight hand-crafted heuristics, see each package's docstring; `base7` was the strongest in our runs, `base2` is strong but slow |
-| `ppo` | `PPOGuandanAgent` | RL (torch) | PPO self-play with LSTM policy/value nets; training script in `guandan_rlcard/baselines/ppo/train.py` |
-| `llm` | `LLMAgent` | LLM | prompts any OpenAI-compatible model for an action index; keys via `GUANDAN_LLM_API_KEY` / `GUANDAN_LLM_BASE_URL` / `GUANDAN_LLM_MODEL` |
-
-All baselines are addressable by name through
-`guandan_rlcard.baselines.get_agent_class(name)`.
-
 ## Implemented rules · 规则实现说明
 
 Standard competitive Guandan: 108 cards, levels 2→A, red-heart level
@@ -147,18 +171,12 @@ counter-tribute (抗贡: payers jointly hold both big jokers), wind-follow
 5-card bomb > 4-card bomb`, sequences compare by natural rank (A may be
 low), passing level A requires finishing 1st+2nd or 1st+3rd.
 
-Documented simplifications (see [docs/rules.md](docs/rules.md)):
-
-* When both tribute cards tie in a double-down, the first-out player
-  takes the last player's card (no suit choice) and the player after the
-  first-out leads.
-* `step_back` is not supported.
-
 This codebase fixes a number of rule bugs found in the original research
 code (four-joker bomb being unbeatable but also unable to beat 5+-card
 bombs, equal straight flushes beating each other, level-promoted plate
-comparison, missing AA2233/AAA222/joker-pair full houses, and more);
-the full list with tests is in [docs/rules.md](docs/rules.md).
+comparison, missing AA2233/AAA222/joker-pair full houses, and more).
+The full ruleset, the documented simplifications and the complete fix
+changelog with regression tests live in [docs/rules.md](docs/rules.md).
 
 ## Repository layout · 目录结构
 
@@ -172,10 +190,17 @@ guandan_rlcard/
 │   ├── dealer.py / judger.py / player.py / round.py / game.py
 ├── envs/guandan_env.py   # RLCard-style env (registered as 'guandan')
 ├── agents/base_agent.py  # GuandanAgent base class
-└── baselines/            # random / rule_based(base1-8) / ppo / llm
-examples/                 # match runners & dataset generation
+└── baselines/
+    ├── random_agent.py   # random baseline
+    ├── rule_based/       # competition top-8 (base1..base8)
+    ├── danzero/          # DanZero agent + pretrained q_network.ckpt
+    ├── dmc/              # DanZero-style DMC training framework
+    ├── danzero_plus/     # DanZero+ (PPO) framework
+    ├── perfectdan/       # the author's PPO self-play algorithm
+    └── llm/              # LLM agent template (keys via env vars)
+examples/                 # match runners, LLM play, dataset generation
 tests/                    # pytest suite for rules and game flow
-docs/rules.md             # ruleset details & changelog vs original code
+docs/                     # rules.md (ruleset & changelog), llm_guide.md
 ```
 
 ## Testing · 测试
@@ -199,8 +224,13 @@ RL agents.
 ## Acknowledgements · 致谢
 
 * Built on [RLCard](https://github.com/datamllab/rlcard) (MIT).
-* The rule baselines originate from earlier Guandan AI research code;
-  `base5` carries an original author credit (Duofeng Wu, 2020).
+* `base1`..`base8` are the top-8 rule entries of the 1st China AI
+  Guandan Competition, re-interfaced for this environment; original
+  author credits are kept in the source headers.
+* DanZero / DanZero+ implementations follow the papers
+  [arXiv:2210.17087](https://arxiv.org/abs/2210.17087) and
+  [arXiv:2312.02561](https://arxiv.org/abs/2312.02561), adapted to this
+  environment.
 
 ## License
 
