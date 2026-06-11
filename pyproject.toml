@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "guandan-rlcard"
+version = "0.1.0"
+description = "An open Guandan (掼蛋) reinforcement learning environment built on RLCard"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Choysang" }]
+keywords = ["guandan", "rlcard", "reinforcement-learning", "card-game", "multi-agent"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "rlcard>=1.2.0",
+    "numpy",
+]
+
+[project.optional-dependencies]
+ppo = ["torch"]
+llm = ["openai"]
+dev = ["pytest"]
+
+[project.urls]
+Repository = "https://github.com/Choysang/guandan-rlcard"
+
+[tool.setuptools.packages.find]
+include = ["guandan_rlcard*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
