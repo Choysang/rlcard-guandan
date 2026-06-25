@@ -1,0 +1,7 @@
+# Web GUI backend dependencies (in addition to the guandan_rlcard package,
+# installed from the repo root with `pip install -e .`).
+flask>=3.0
+flask-cors>=4.0
+flask-socketio>=5.3
+# Pure-Python websocket transport so no eventlet/gevent build is required.
+simple-websocket>=1.0

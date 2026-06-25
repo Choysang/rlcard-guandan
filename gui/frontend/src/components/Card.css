@@ -1,0 +1,319 @@
+.card {
+  background-color: #fff;
+  border: 1px solid #b0b0b0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: relative;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+}
+
+.card-normal {
+  width: 80px;
+  height: 120px;
+}
+
+.card-small {
+  width: 50px;
+  height: 75px;
+}
+
+.card-content {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  text-align: left;
+}
+
+.card-rank {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.card-suit {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.card-red {
+  color: #d90000;
+}
+
+.card-black {
+  color: #000;
+}
+
+.card-body-suit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40px;
+  opacity: 0.8;
+}
+
+.card-joker .card-body-suit {
+  font-size: 20px;
+}
+
+/* 卡牌尺寸 */
+.card-small {
+  width: 45px;
+  height: 63px;
+}
+
+.card-normal {
+  width: 70px;
+  height: 98px;
+}
+
+.card-large {
+  width: 90px;
+  height: 126px;
+}
+
+/* 交互状态 */
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  border-color: #667eea;
+  background: linear-gradient(145deg, #ffffff, #f1f3f4);
+}
+
+.card-selected {
+  border-color: #667eea;
+  box-shadow: 
+    0 12px 30px rgba(102, 126, 234, 0.3),
+    0 6px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9),
+    0 0 0 3px rgba(102, 126, 234, 0.2);
+  background: linear-gradient(145deg, #f8f9ff, #e6efff);
+  transform: scale(1.05);
+}
+
+.card-selected::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(102, 126, 234, 0.05));
+  z-index: -1;
+}
+
+/* 不同尺寸的字体大小 */
+.card-small .card-rank {
+  font-size: 0.8rem;
+}
+
+.card-small .card-suit {
+  font-size: 1rem;
+}
+
+.card-normal .card-rank {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.card-normal .card-suit {
+  font-size: 1.6rem;
+}
+
+.card-large .card-rank {
+  font-size: 1.8rem;
+}
+
+.card-large .card-suit {
+  font-size: 2rem;
+}
+
+/* 大小王特殊样式 */
+.card-joker {
+  background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+  border-color: #ffc107;
+  box-shadow: 
+    0 4px 12px rgba(255, 193, 7, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.card-big-joker {
+  background: linear-gradient(145deg, #ffe6e6, #ffcccb);
+  border-color: #dc3545;
+  box-shadow: 
+    0 4px 12px rgba(220, 53, 69, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.card-small-joker {
+  background: linear-gradient(145deg, #e6f3ff, #cce7ff);
+  border-color: #007bff;
+  box-shadow: 
+    0 4px 12px rgba(0, 123, 255, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+.card-joker .card-content {
+  font-weight: bold;
+}
+
+.card-big-joker .card-content {
+  color: #dc3545;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.card-small-joker .card-content {
+  color: #007bff;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.joker-rank {
+  font-size: 0.9rem !important;
+  margin-bottom: 2px;
+}
+
+.joker-symbol {
+  font-size: 1.4rem !important;
+  margin-top: -2px;
+}
+
+.card-normal .joker-rank {
+  font-size: 1.1rem !important;
+}
+
+.card-normal .joker-symbol {
+  font-size: 1.6rem !important;
+}
+
+/* 空卡牌样式 */
+.card-empty {
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border: 2px dashed #ced4da;
+  color: #6c757d;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+/* 禁用状态 */
+.card:disabled,
+.card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+}
+
+/* 动画效果 */
+@keyframes cardFlip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
+
+.card.flip {
+  animation: cardFlip 0.6s ease-in-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .card-normal {
+    width: 60px;
+    height: 84px;
+  }
+  
+  .card-small {
+    width: 40px;
+    height: 56px;
+  }
+  
+  .card-normal .card-rank {
+    font-size: 1.2rem;
+  }
+  
+  .card-normal .card-suit {
+    font-size: 1.4rem;
+  }
+  
+  .card-small .card-rank {
+    font-size: 0.7rem;
+  }
+  
+  .card-small .card-suit {
+    font-size: 0.9rem;
+  }
+  
+  .card-normal .joker-rank {
+    font-size: 1rem !important;
+  }
+  
+  .card-normal .joker-symbol {
+    font-size: 1.4rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-normal {
+    width: 50px;
+    height: 70px;
+  }
+  
+  .card-small {
+    width: 35px;
+    height: 49px;
+  }
+  
+  .card-normal .card-rank {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .card-normal .card-suit {
+    font-size: 1.2rem;
+  }
+  
+  .card-small .card-rank {
+    font-size: 0.6rem;
+  }
+  
+  .card-small .card-suit {
+    font-size: 0.8rem;
+  }
+  
+  .card-normal .joker-rank {
+    font-size: 0.9rem !important;
+  }
+  
+  .card-normal .joker-symbol {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* 特殊效果：闪光 */
+.card-highlight {
+  animation: cardGlow 2s ease-in-out infinite;
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 20px rgba(255, 215, 0, 0.6);
+  }
+} 

@@ -1,0 +1,280 @@
+/* 连接状态指示器 */
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.connection-status.connected {
+  background-color: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.connection-status.disconnected {
+  background-color: rgba(244, 67, 54, 0.15);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.connected .status-dot {
+  background-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.disconnected .status-dot {
+  background-color: #f44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+.connected .status-text {
+  color: #4caf50;
+}
+
+.disconnected .status-text {
+  color: #f44336;
+}
+
+.server-url {
+  color: #a0a0c0;
+  font-family: monospace;
+  font-size: 0.85rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.lobby-container {
+  max-width: 800px;
+  margin: 20px auto;
+  background-color: #2c2c44;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.lobby-tabs {
+  display: flex;
+  border-bottom: 2px solid #4a4a6a;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 15px 30px;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  color: #a0a0c0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; /* Align with the container's border */
+}
+
+.tab-btn:hover:not(:disabled) {
+  background-color: #383854;
+  color: #ffffff;
+}
+
+.tab-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tab-btn.active {
+  color: #ffffff;
+  border-color: #76bdff;
+}
+
+.join-room-section {
+  padding: 20px;
+  text-align: center;
+}
+
+.join-room-section h2 {
+  color: #e0e0ff;
+  margin-bottom: 20px;
+}
+
+.join-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.room-id-input {
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1px solid #5a5a7a;
+  border-radius: 6px;
+  background-color: #1e1e30;
+  color: #ffffff;
+  width: 250px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.room-id-input::placeholder {
+  color: #8080a0;
+}
+
+.join-btn {
+  padding: 12px 25px;
+}
+
+.waiting-room {
+  text-align: center;
+  padding: 50px;
+}
+
+.waiting-room h2 {
+  color: #e0e0ff;
+}
+
+.waiting-room .room-id {
+  background-color: #4a4a6a;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  border: 2px dashed #76bdff;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+/* 服务器设置页面 */
+.server-settings-section {
+  padding: 20px;
+}
+
+.server-settings-section h2 {
+  color: #e0e0ff;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.settings-hint {
+  color: #a0a0c0;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+}
+
+.server-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto 20px;
+}
+
+.server-input-group label {
+  color: #c0c0e0;
+  font-weight: 600;
+}
+
+.server-url-input {
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 1px solid #5a5a7a;
+  border-radius: 6px;
+  background-color: #1e1e30;
+  color: #ffffff;
+  font-family: monospace;
+}
+
+.server-url-input::placeholder {
+  color: #8080a0;
+}
+
+.connect-btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+}
+
+.connection-error {
+  background-color: rgba(244, 67, 54, 0.15);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  color: #ff6b6b;
+  padding: 12px 15px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 20px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.server-tips {
+  background-color: rgba(118, 189, 255, 0.1);
+  border: 1px solid rgba(118, 189, 255, 0.3);
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-top: 20px;
+}
+
+.server-tips h4 {
+  color: #76bdff;
+  margin-bottom: 10px;
+}
+
+.server-tips ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.server-tips li {
+  color: #c0c0e0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+}
+
+.server-tips li:last-child {
+  border-bottom: none;
+}
+
+.server-tips code {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #ffcc80;
+}
+
+/* 未连接提示 */
+.not-connected-hint {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.not-connected-hint h3 {
+  color: #ffcc80;
+  margin-bottom: 10px;
+}
+
+.not-connected-hint p {
+  color: #a0a0c0;
+} 

@@ -1,0 +1,242 @@
+.hand-cards-container {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.hand-cards-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 0;
+  border-bottom: none;
+}
+
+.hand-cards-header h3 {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.card-count {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.selected-count {
+  background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: pulse-selected 2s infinite;
+  box-shadow: 0 2px 8px rgba(86, 171, 47, 0.3);
+}
+
+@keyframes pulse-selected {
+  0% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+}
+
+/* 横排手牌排列 - 斗地主风格 */
+.hand-cards {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  height: 150px;
+}
+
+.hand-cards.empty {
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  min-height: 120px;
+  height: 120px;
+}
+
+/* 卡牌容器 - 横向重叠排列 */
+.hand-cards .card-container {
+  position: absolute;
+  transition: transform 0.2s ease-out;
+}
+
+/* 第一张牌不需要负边距 */
+.hand-cards .card-container:first-child {
+  margin-left: 0;
+}
+
+/* 卡牌悬浮效果 */
+.hand-cards .card-container:not(.selected):hover {
+  transform: translateY(-15px);
+  z-index: 100;
+}
+
+/* 卡牌选中效果 */
+.hand-cards .card-container.selected {
+  transform: translateY(-20px) scale(1.08);
+}
+
+/* 当手牌较多时，增加重叠程度 */
+.hand-cards[data-card-count="10"] .card-container,
+.hand-cards[data-card-count="11"] .card-container,
+.hand-cards[data-card-count="12"] .card-container {
+  margin-left: -30px;
+}
+
+.hand-cards[data-card-count="10"] .card-container:first-child,
+.hand-cards[data-card-count="11"] .card-container:first-child,
+.hand-cards[data-card-count="12"] .card-container:first-child {
+  margin-left: 0;
+}
+
+.hand-cards[data-card-count="13"] .card-container,
+.hand-cards[data-card-count="14"] .card-container,
+.hand-cards[data-card-count="15"] .card-container {
+  margin-left: -35px;
+}
+
+.hand-cards[data-card-count="13"] .card-container:first-child,
+.hand-cards[data-card-count="14"] .card-container:first-child,
+.hand-cards[data-card-count="15"] .card-container:first-child {
+  margin-left: 0;
+}
+
+/* 手牌提示 */
+.hand-cards-tips {
+  margin-top: 15px;
+  padding: 8px 15px;
+  background: rgba(102, 126, 234, 0.15);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  backdrop-filter: blur(5px);
+  max-width: 400px;
+  text-align: center;
+}
+
+.hand-cards-tips p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .hand-cards {
+    height: 100px;
+    max-width: 600px;
+    padding: 0 15px;
+  }
+  
+  .hand-cards .card-container {
+    margin-left: -20px;
+  }
+  
+  .hand-cards .card-container:first-child {
+    margin-left: 0;
+  }
+  
+  .hand-cards .card-container:hover {
+    transform: translateY(-10px) scale(1.03);
+  }
+  
+  .hand-cards .card-container.selected {
+    transform: translateY(-15px) scale(1.05);
+  }
+  
+  .hand-cards[data-card-count="10"] .card-container,
+  .hand-cards[data-card-count="11"] .card-container,
+  .hand-cards[data-card-count="12"] .card-container {
+    margin-left: -25px;
+  }
+  
+  .hand-cards[data-card-count="13"] .card-container,
+  .hand-cards[data-card-count="14"] .card-container,
+  .hand-cards[data-card-count="15"] .card-container {
+    margin-left: -30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hand-cards {
+    height: 80px;
+    max-width: 400px;
+    padding: 0 10px;
+  }
+  
+  .hand-cards .card-container {
+    margin-left: -15px;
+  }
+  
+  .hand-cards .card-container:first-child {
+    margin-left: 0;
+  }
+  
+  .hand-cards .card-container:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+  
+  .hand-cards .card-container.selected {
+    transform: translateY(-12px) scale(1.04);
+  }
+  
+  .hand-cards[data-card-count="10"] .card-container,
+  .hand-cards[data-card-count="11"] .card-container,
+  .hand-cards[data-card-count="12"] .card-container,
+  .hand-cards[data-card-count="13"] .card-container,
+  .hand-cards[data-card-count="14"] .card-container,
+  .hand-cards[data-card-count="15"] .card-container {
+    margin-left: -20px;
+  }
+  
+  .hand-cards-header {
+    margin-bottom: 10px;
+  }
+  
+  .hand-cards-tips {
+    margin-top: 10px;
+    padding: 6px 12px;
+  }
+}
+
+.hand-cards-tip {
+  position: absolute;
+  bottom: -50px; /* Adjust this value to move the text down */
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+} 

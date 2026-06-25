@@ -1,0 +1,25 @@
+{
+  "name": "guandan-gui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web GUI for guandan-rlcard (React + Vite, Socket.IO).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "vite": "^7.3.6"
+  }
+}

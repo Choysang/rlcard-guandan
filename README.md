@@ -101,6 +101,25 @@ LLM agents need an API key **via environment variables** - nothing is
 hardcoded. Step-by-step setup (key placement, providers, full run
 commands): **[docs/llm_guide.md](docs/llm_guide.md)**.
 
+## Web GUI · 网页对战界面
+
+Prefer a browser to a terminal? A React + Flask/Socket.IO front end lets
+humans play against any baseline in real time over a LAN — it drives the
+same engine, not a separate copy.
+
+想要图形界面？仓库自带 React + Flask/Socket.IO 网页前端，可在局域网内人机
+/多人实时对战，底层复用同一套引擎。
+
+```bash
+pip install -r gui/backend/requirements.txt
+cd gui/frontend && npm install && npm run build
+cd ../.. && python -m gui.backend.server          # open http://localhost:5000
+```
+
+One player creates a room and configures the four seats (human or AI);
+others join with the room id. Full setup, LAN play, AI options and dev
+(hot-reload) mode: **[docs/gui_guide.md](docs/gui_guide.md)**.
+
 ## Baselines · 基线智能体
 
 All baselines are addressable by name through
@@ -200,7 +219,8 @@ guandan_rlcard/
     └── llm/              # LLM agent template (keys via env vars)
 examples/                 # match runners, LLM play, dataset generation
 tests/                    # pytest suite for rules and game flow
-docs/                     # rules.md (ruleset & changelog), llm_guide.md
+docs/                     # rules.md, llm_guide.md, gui_guide.md
+gui/                      # web GUI: Flask+Socket.IO backend / React+Vite frontend
 ```
 
 ## Testing · 测试
