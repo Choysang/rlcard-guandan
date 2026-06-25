@@ -5,9 +5,9 @@ import './HandCards.css';
 // between cards shrinks as the hand grows, but never below MIN_STEP so the
 // rank in each card's top-left corner is always visible (the step stays
 // wider than that number).
-const CARD_WIDTH = 60;
-const MAX_FAN_WIDTH = 780;
-const MAX_STEP = 42; // most spacing (fewest cards)
+const CARD_WIDTH = 56;
+const MAX_FAN_WIDTH = 760;
+const MAX_STEP = 40; // most spacing (fewest cards)
 const MIN_STEP = 28; // tightest spacing (many cards); > rank-number width
 
 const HandCards = ({ cards, selectedCards, onCardSelect, isInteractive }) => {

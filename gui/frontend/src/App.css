@@ -12,14 +12,14 @@
 
 .App-header {
   background-color: rgba(40, 44, 52, 0.9);
-  padding: 6px 20px;
+  padding: 4px 20px;
   color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .App-header h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }

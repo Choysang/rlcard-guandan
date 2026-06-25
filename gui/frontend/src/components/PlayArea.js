@@ -20,7 +20,7 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
   const greaterPos = gameState.greaterPos || -1;
 
   // 获取最近的出牌记录（只显示最后一轮）
-  const lastRoundPlays = trace.slice(-4); // 最近4次出牌
+  const lastRoundPlays = trace.slice(-3); // 最近 3 次出牌
 
   // 获取当前最大的牌
   const getCurrentPlay = () => {
@@ -108,7 +108,7 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
                   <Card
                     key={`current-${cardStr}-${index}`}
                     cardString={cardStr}
-                    size="normal"
+                    size="small"
                   />
                 ))}
               </div>

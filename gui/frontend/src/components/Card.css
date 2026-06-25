@@ -48,18 +48,35 @@
 
 /* 卡牌尺寸 */
 .card-small {
-  width: 40px;
-  height: 56px;
+  width: 38px;
+  height: 52px;
 }
 
 .card-normal {
-  width: 60px;
-  height: 84px;
+  width: 56px;
+  height: 78px;
 }
 
 .card-large {
-  width: 78px;
-  height: 109px;
+  width: 72px;
+  height: 100px;
+}
+
+/* 大小王中央文字（竖排，适配窄牌面，绝不溢出） */
+.joker-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  writing-mode: vertical-rl;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.card-small .joker-label {
+  font-size: 11px;
 }
 
 /* 交互状态 */

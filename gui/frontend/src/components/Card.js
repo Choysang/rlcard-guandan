@@ -34,12 +34,11 @@ const Card = ({ cardString, size = 'normal' }) => {
   if (isJoker) {
     const isSmall = rank === 'B';
     return (
-      <div className={`${cardClasses} ${isSmall ? 'card-black' : 'card-red'}`}>
+      <div className={`${cardClasses} card-joker ${isSmall ? 'card-black' : 'card-red'}`}>
         <div className="card-content">
           <div className="card-rank">{isSmall ? 'S' : 'B'}</div>
-          <div className="card-suit">JOKER</div>
-          <div className="card-body-suit">{isSmall ? '小王' : '大王'}</div>
         </div>
+        <div className="joker-label">{isSmall ? '小王' : '大王'}</div>
       </div>
     );
   }
