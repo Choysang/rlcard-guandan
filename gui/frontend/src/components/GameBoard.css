@@ -1,14 +1,15 @@
 /* 主游戏区域 */
 .game-board {
   width: 100%;
-  min-height: 100vh;
+  flex: 1;
+  min-height: 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 10px 14px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .game-board::before {
@@ -53,12 +54,14 @@
 /* 四人游戏布局 */
 .game-layout {
   display: grid;
-  grid-template-areas: 
+  grid-template-areas:
     "top-player"
     "middle-area"
     "bottom-player";
-  grid-template-rows: 120px 1fr 220px;
-  gap: 20px;
+  /* content-sized top/bottom so the hand fan is never clipped; the middle
+     table absorbs the remaining height */
+  grid-template-rows: auto minmax(140px, 1fr) auto;
+  gap: 10px;
   flex: 1;
   position: relative;
   z-index: 1;
@@ -87,8 +90,8 @@
   grid-area: middle-area;
   display: grid;
   grid-template-areas: "left-player center-table right-player";
-  grid-template-columns: 150px 1fr 150px;
-  gap: 20px;
+  grid-template-columns: 124px 1fr 124px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -108,7 +111,7 @@
   border-radius: 20px;
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  min-height: 200px;
+  min-height: 150px;
   position: relative;
 }
 
@@ -123,13 +126,12 @@
 .bottom-player {
   grid-area: bottom-player;
   flex-direction: column;
-  gap: 15px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px 20px 0 0;
-  padding: 20px 15px 15px 15px;
+  padding: 8px 12px 6px 12px;
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  min-height: 200px;
 }
 
 /* 玩家信息卡片 */
@@ -204,23 +206,30 @@
   51%, 100% { opacity: 0.7; }
 }
 
-/* 牌背面样式 */
+/* 牌背面样式 - 重叠堆叠，避免占用过多空间 */
 .player-cards {
   display: flex;
-  gap: 3px;
 }
 
 .player-cards.horizontal {
   flex-direction: row;
 }
 
+.player-cards.horizontal .card-back + .card-back {
+  margin-left: -14px;
+}
+
 .player-cards.vertical {
   flex-direction: column;
 }
 
+.player-cards.vertical .card-back + .card-back {
+  margin-top: -22px;
+}
+
 .card-back {
-  width: 30px;
-  height: 42px;
+  width: 24px;
+  height: 34px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -234,13 +243,13 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 16px;
+  font-size: 13px;
   opacity: 0.7;
 }
 
 .vertical-card {
-  width: 28px;
-  height: 38px;
+  width: 22px;
+  height: 30px;
 }
 
 /* 当前玩家区域 */
@@ -254,8 +263,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  min-height: 140px;
-  padding: 10px 0;
+  min-height: 104px;
+  padding: 2px 0;
   position: relative;
 }
 
@@ -263,7 +272,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 2px;
   width: 100%;
 }
 
