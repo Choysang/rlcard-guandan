@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
-    "test:selection": "node --test src/utils/cardSelection.test.js"
+    "test:selection": "node --test src/utils/cardSelection.test.js",
+    "test:ui": "node --test src/utils/cardSelection.test.js src/utils/playAreaState.test.js"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -1,11 +1,14 @@
 import Card from './Card';
 import './DebugPanel.css';
 
-const DebugPanel = ({ debugState, currentPlayer, onSelectAction }) => {
+const DebugPanel = ({ debugState, currentPlayer, onSelectAction, onClose }) => {
   if (!debugState) return null;
 
   const legalActions = debugState.legal_actions_by_player?.[currentPlayer] || [];
   const timings = debugState.timings || {};
+  const roomConfig = debugState.room_config || {};
+  const snapshot = debugState.state_snapshot || {};
+  const lastActions = debugState.last_actions || {};
 
   return (
     <aside className="debug-panel">
@@ -14,7 +17,12 @@ const DebugPanel = ({ debugState, currentPlayer, onSelectAction }) => {
           <h2>调测</h2>
           <span>当前座位 {currentPlayer}</span>
         </div>
-        <span className="debug-seed">seed {debugState.seed ?? '-'}</span>
+        <div className="debug-header-actions">
+          <span className="debug-seed">seed {debugState.seed ?? '-'}</span>
+          <button type="button" className="debug-close" onClick={onClose}>
+            关闭
+          </button>
+        </div>
       </header>
 
       <section className="debug-section">
@@ -26,6 +34,11 @@ const DebugPanel = ({ debugState, currentPlayer, onSelectAction }) => {
             <strong>{value} ms</strong>
           </div>
         ))}
+      </section>
+
+      <section className="debug-section">
+        <h3>房间配置</h3>
+        <pre>{JSON.stringify(roomConfig, null, 2)}</pre>
       </section>
 
       <section className="debug-section">
@@ -45,7 +58,7 @@ const DebugPanel = ({ debugState, currentPlayer, onSelectAction }) => {
       <section className="debug-section">
         <h3>当前合法动作 {legalActions.length}</h3>
         <div className="debug-actions">
-          {legalActions.slice(0, 80).map((action, index) => (
+          {legalActions.map((action, index) => (
             <button
               key={`${action[0]}-${action[1]}-${index}`}
               type="button"
@@ -57,6 +70,16 @@ const DebugPanel = ({ debugState, currentPlayer, onSelectAction }) => {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="debug-section">
+        <h3>最近动作</h3>
+        <pre>{JSON.stringify(lastActions, null, 2)}</pre>
+      </section>
+
+      <section className="debug-section">
+        <h3>状态快照</h3>
+        <pre>{JSON.stringify(snapshot, null, 2)}</pre>
       </section>
 
       <section className="debug-section">

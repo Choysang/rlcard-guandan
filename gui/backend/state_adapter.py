@@ -6,6 +6,27 @@ is opt-in and intentionally exposes hidden hands for algorithm inspection.
 
 from guandan_rlcard.game.card_utils import cards2str
 
+SAFE_ROOM_CONFIG_KEYS = ('human_player_ids', 'agentTypes',
+                         'debug_enabled', 'ai_speed')
+
+
+def sanitize_room_config(room_config):
+    """Return the non-identifying room config safe for logs/debug payloads."""
+    source = room_config or {}
+    safe = {}
+    for key in SAFE_ROOM_CONFIG_KEYS:
+        if key not in source:
+            continue
+        value = source[key]
+        if key == 'human_player_ids':
+            safe[key] = list(value or [])
+        elif key == 'agentTypes':
+            safe[key] = {str(seat): str(agent)
+                         for seat, agent in dict(value or {}).items()}
+        else:
+            safe[key] = value
+    return safe
+
 
 def _recent_plays_from_trace(trace):
     recent = {pid: None for pid in range(4)}
@@ -100,7 +121,7 @@ def build_debug_state(env, human_player_ids, seed=None, room_config=None,
 
     return {
         'seed': seed,
-        'room_config': dict(room_config or {}),
+        'room_config': sanitize_room_config(room_config),
         'human_player_ids': list(human_player_ids),
         'current_player': current_player,
         'all_player_hands': all_hands,

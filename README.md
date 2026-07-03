@@ -117,8 +117,11 @@ cd ../.. && python -m gui.backend.server          # open http://localhost:5000
 ```
 
 One player creates a room and configures the four seats (human or AI);
-others join with the room id. Full setup, LAN play, AI options and dev
-(hot-reload) mode: **[docs/gui_guide.md](docs/gui_guide.md)**.
+others join with the room id. The table supports landscape play, press-drag
+hand selection, host-controlled AI speed, optional host-only debug rooms,
+and anonymous JSONL event logging for algorithm evaluation. Full setup,
+LAN play, AI options and dev (hot-reload) mode:
+**[docs/gui_guide.md](docs/gui_guide.md)**.
 
 ## Baselines · 基线智能体
 

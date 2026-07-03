@@ -1,6 +1,7 @@
 """Tests for GUI JSONL logging."""
 
 import json
+import threading
 
 from gui.backend.game_logger import GameLogger
 
@@ -61,3 +62,55 @@ def test_id_helpers_generate_prefixed_values(tmp_path):
     assert logger.new_participant_id().startswith('participant_')
     assert logger.new_session_id().startswith('session_')
     assert logger.new_game_id().startswith('game_')
+
+
+def test_logger_writes_each_event_as_one_serialized_line(tmp_path):
+    logger = GameLogger(log_dir=tmp_path,
+                        clock=lambda: '2026-07-03T00:00:00Z')
+    calls = []
+
+    class RecordingHandle:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def write(self, text):
+            calls.append(text)
+
+    class RecordingPath:
+        def open(self, *args, **kwargs):
+            return RecordingHandle()
+
+    logger.path = RecordingPath()
+
+    logger.write_event('event', {'room_id': 'ROOM01'})
+
+    assert len(calls) == 1
+    assert calls[0].endswith('\n')
+    assert json.loads(calls[0])['event_type'] == 'event'
+
+
+def test_logger_concurrent_writes_remain_valid_jsonl(tmp_path):
+    logger = GameLogger(log_dir=tmp_path,
+                        clock=lambda: '2026-07-03T00:00:00Z')
+
+    def write_many(worker):
+        for index in range(100):
+            logger.write_event('event', {
+                'worker': worker,
+                'index': index,
+                'account_id': None,
+            })
+
+    threads = [threading.Thread(target=write_many, args=(i,))
+               for i in range(6)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    lines = read_lines(tmp_path / 'guandan_gui.jsonl')
+    assert len(lines) == 600
+    assert {line['worker'] for line in lines} == set(range(6))

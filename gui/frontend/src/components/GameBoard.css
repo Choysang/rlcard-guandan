@@ -1,4 +1,6 @@
 .game-board-shell {
+  --debug-drawer-width: min(360px, 36vw);
+  position: relative;
   width: 100%;
   min-height: 0;
   flex: 1;
@@ -66,6 +68,10 @@
   margin-bottom: 0;
 }
 
+.game-board-shell.debug-open .game-board .game-status {
+  right: calc(var(--debug-drawer-width) + 24px);
+}
+
 .board-toolbar {
   position: absolute;
   top: 10px;
@@ -99,6 +105,11 @@
 .speed-segment button.active,
 .debug-toggle.active {
   background: #1f7a5c;
+}
+
+.speed-segment button:disabled {
+  opacity: 0.46;
+  cursor: default;
 }
 
 .top-player-zone {
@@ -275,6 +286,10 @@
     min-height: 28px;
     padding: 0 8px;
     font-size: 12px;
+  }
+
+  .debug-toggle {
+    display: none;
   }
 
   .bottom-player-zone {

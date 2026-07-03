@@ -20,7 +20,11 @@ function App() {
 
   // 设置socket事件监听器
   const setupSocketListeners = useCallback(() => {
-    guandanService.on('room_created', ({ roomId, playerId, participantId }) => {
+    guandanService.on('room_created', ({
+      roomId, playerId, participantId, sessionId, resumeToken, hostToken,
+    }) => {
+      guandanService.rememberSessionId(sessionId);
+      guandanService.rememberRoomTokens(roomId, { resumeToken, hostToken });
       setRoomId(roomId);
       setPlayerId(playerId);
       setParticipantId(participantId || null);
@@ -28,7 +32,11 @@ function App() {
       setLoading(false);
     });
 
-    guandanService.on('joined_room', ({ roomId, playerId, participantId }) => {
+    guandanService.on('joined_room', ({
+      roomId, playerId, participantId, sessionId, resumeToken, hostToken,
+    }) => {
+      guandanService.rememberSessionId(sessionId);
+      guandanService.rememberRoomTokens(roomId, { resumeToken, hostToken });
       setRoomId(roomId);
       setPlayerId(playerId);
       setParticipantId(participantId || null);

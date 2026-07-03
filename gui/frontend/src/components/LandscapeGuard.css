@@ -8,7 +8,7 @@
   display: flex;
 }
 
-@media (max-width: 900px) and (orientation: portrait) {
+@media (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
   .landscape-content {
     display: none;
   }

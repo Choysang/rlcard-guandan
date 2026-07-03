@@ -21,7 +21,7 @@ def test_play_state_is_viewer_specific_and_hides_other_hands():
 
     assert state['player_hands'].keys() == {0}
     assert state['player_hands'][0] == env.get_state(0)['current_hand']
-    assert 'all_players_hands' not in state
+    assert 'all_player_hands' not in state
     assert 'other_player_hands' not in state
     assert state['human_player_ids'] == [0, 2]
 
@@ -53,3 +53,24 @@ def test_debug_state_exposes_all_hands_and_timings():
     assert debug['room_config']['debug_enabled'] is True
     assert debug['timings']['state_ms'] == 1.5
     assert isinstance(debug['legal_actions_by_player'], dict)
+
+
+def test_debug_state_sanitizes_room_config():
+    env = make_env()
+    debug = build_debug_state(
+        env,
+        human_player_ids=[0],
+        room_config={
+            'human_player_ids': [0],
+            'agentTypes': {'1': 'random'},
+            'debug_enabled': True,
+            'nickname': 'alice@example.com',
+            'token': 'secret',
+        },
+    )
+
+    assert debug['room_config'] == {
+        'human_player_ids': [0],
+        'agentTypes': {'1': 'random'},
+        'debug_enabled': True,
+    }

@@ -66,9 +66,10 @@ python -m gui.backend.server
 cd gui/frontend && npm run dev
 ```
 
-Open `http://localhost:5173`. The dev page connects to the backend on
-`http://localhost:5000`; change that in `gui/frontend/.env`
-(`VITE_BACKEND_URL=...`) if needed.
+Open `http://localhost:5173`. In dev mode the page connects to the
+backend on the same hostname at port `5000` (for example a phone opening
+`http://192.168.1.8:5173` connects to `http://192.168.1.8:5000`). Override
+that in `gui/frontend/.env` (`VITE_BACKEND_URL=...`) if needed.
 
 ### Environment variables · 环境变量
 
@@ -78,7 +79,9 @@ Backend (all optional):
 |---|---|---|
 | `GUANDAN_GUI_PORT` | backend port | `5000` |
 | `GUANDAN_GUI_AI_DELAY` | seconds between animated AI turns | `0.8` |
+| `GUANDAN_GUI_AI_SLOW_DELAY` | slow-mode AI turn delay | `1.6` |
 | `GUANDAN_GUI_CORS` | allowed origins (`*` or comma list) | `*` |
+| `GUANDAN_GUI_LOG_DIR` | JSONL event log directory | `logs/gui` |
 | `GUANDAN_GUI_OPEN_BROWSER` | auto-open a browser on start | `false` |
 
 Frontend: `VITE_BACKEND_URL` in `gui/frontend/.env` (see `.env.example`).
@@ -91,11 +94,21 @@ Frontend: `VITE_BACKEND_URL` in `gui/frontend/.env` (see `.env.example`).
 2. **Join** (加入房间): other humans open the LAN address, go to the
    "加入房间" tab and enter the room id. The match starts once every human
    seat is filled (an all-AI-but-one room starts immediately).
-3. **Your turn** (你的回合): click cards to select them; when they form a
-   legal combo the **出牌** button lights up. Use **提示** to cycle through
-   legal combos and **不出** to pass.
+3. **Your turn** (你的回合): press and drag across your hand to select or
+   deselect multiple cards continuously. Clicking still toggles one card.
+   When the selected cards form a legal combo the **出牌** button lights up.
+   Use **提示** to cycle through legal combos and **不出** to pass.
 4. The match runs across multiple deals until one team passes level A;
    the tribute phase between deals is resolved automatically.
+
+### Debug rooms · 调测房
+
+The create-room form has an optional debug switch for developer testing.
+Only a room created with that switch can use debug mode, and only the host
+browser that holds the server-issued `hostToken` can toggle it or receive
+`debug_state`. Normal joined players never receive hidden hands. The debug
+drawer shows all hands, current legal actions, recent actions, room config,
+state snapshot, trace and timing fields.
 
 ## 4. AI opponents · AI 对手
 
@@ -124,22 +137,45 @@ error and you can pick another seat type.
 
 * **One engine.** Each room owns a `GuandanEnv`; AI seats use registry
   agents and human seats use a thin placeholder. The backend auto-plays
-  AI turns and pauses only when a human has a real decision.
+  AI turns through a per-room serialized driver and pauses only when a
+  human has a real decision.
 * **Tribute is automatic.** The engine resolves 进贡/还贡 synchronously
   between deals using each agent's rule-abiding default, so human seats do
   not block the server waiting on a websocket. This is a deliberate
   simplification of the GUI (the engine and CLI still expose full tribute
   control to programmatic agents).
-* **State contract.** `state_adapter.build_frontend_state` maps the engine
-  dict to the flat JSON the React client consumes (`player_hands`,
-  `actions`, `num_cards_left`, `greaterAction`, `current_rank`, `is_over`,
-  `winner_team`, ...). The action format is the same as the engine:
+* **Viewer-specific state.** Every Socket.IO `game_started` / `update_state`
+  payload is shaped as `{state, debug_state, current_player, viewer_player_id,
+  room_id}`. `state` is safe for normal play: it only includes the viewer's
+  own hand and only includes `actions` when that viewer is the acting human.
+  It also carries room/viewer modes such as `ai_speed`, `debug_enabled`,
+  `debug_allowed` (room can debug), `viewer_can_debug` (this browser may
+  see debug data) and `viewer_is_host`.
+* **Debug state.** `debug_state` is `null` unless the viewer is authorized.
+  When present it intentionally exposes `all_player_hands`,
+  `legal_actions_by_player`, trace, timing and sanitized room config for
+  algorithm debugging.
+* **Action format.** The action format is the same as the engine:
   `[combo_type, key_rank, [cards]]`.
+* **Anonymous logging.** The backend appends JSONL events to
+  `logs/gui/guandan_gui.jsonl` by default. Player-scoped events carry
+  generated `participant_id`, server-shaped `session_id`, `game_id` and
+  `account_id: null`; room-scoped events carry a `participants` list instead
+  of pretending to belong to one player. Browser-held `resumeToken` and
+  `hostToken` are not logged. Free-form fields such as nicknames are not
+  persisted.
+* **Deployment boundary.** Rooms are stored in process memory. The current
+  server is suitable for local/LAN testing and single-process deployment.
+  Multi-worker or multi-instance production needs external room/session
+  state plus sticky Socket.IO sessions.
 
 ## 6. Troubleshooting · 常见问题
 
 * **Other players cannot connect.** Make sure the host firewall allows the
   backend port (default 5000) and everyone is on the same network.
+* **Phone opened the dev page but cannot connect.** Set
+  `VITE_BACKEND_URL=http://<host-LAN-ip>:5000`, or open the Vite page using
+  the host LAN IP instead of `localhost`.
 * **"该 AI 需要下载模型权重".** The chosen AI needs weights/torch; install
   `".[ppo]"` and place the weights, or pick a rule AI.
 * **Blank page in production mode.** Run `npm run build` in

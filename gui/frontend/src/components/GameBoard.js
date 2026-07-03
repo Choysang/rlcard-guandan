@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ActionPanel from './ActionPanel';
 import DebugPanel from './DebugPanel';
 import './GameBoard.css';
@@ -24,20 +24,25 @@ const GameBoard = ({
   onSetDebugMode = () => {},
 }) => {
   const [selectedIndices, setSelectedIndices] = useState([]);
-  const [debugOpen, setDebugOpen] = useState(Boolean(debugState));
-  const [aiSpeed, setAiSpeed] = useState('normal');
   const hintIndexRef = useRef(0);
 
   const activePlayer = currentPlayer ?? gameState?.current_player;
   const turnKey = `${activePlayer}:${gameState?.turn_count}`;
-  const [prevTurnKey, setPrevTurnKey] = useState(turnKey);
-  if (turnKey !== prevTurnKey) {
-    setPrevTurnKey(turnKey);
-    setSelectedIndices([]);
-    hintIndexRef.current = 0;
-  }
+  const prevTurnKeyRef = useRef(turnKey);
+
+  useEffect(() => {
+    if (turnKey !== prevTurnKeyRef.current) {
+      prevTurnKeyRef.current = turnKey;
+      setSelectedIndices([]);
+      hintIndexRef.current = 0;
+    }
+  }, [turnKey]);
 
   const isPlayerTurn = activePlayer === thisPlayerId;
+  const aiSpeed = gameState?.ai_speed || 'normal';
+  const canControlRoom = Boolean(gameState?.viewer_is_host);
+  const canUseDebug = Boolean(gameState?.viewer_can_debug);
+  const debugOpen = canUseDebug && Boolean(gameState?.debug_enabled);
 
   const playerHand = useMemo(() => {
     if (thisPlayerId !== null && gameState?.player_hands) {
@@ -108,14 +113,13 @@ const GameBoard = ({
   };
 
   const handleSpeedChange = (speed) => {
-    setAiSpeed(speed);
+    if (!canControlRoom) return;
     onSetAiSpeed(speed);
   };
 
   const handleDebugToggle = () => {
-    const next = !debugOpen;
-    setDebugOpen(next);
-    onSetDebugMode(next);
+    if (!canUseDebug) return;
+    onSetDebugMode(!debugOpen);
   };
 
   const getPlayerName = (playerId) => {
@@ -129,9 +133,7 @@ const GameBoard = ({
   const getPlayerCardCount = (playerId) => gameState?.num_cards_left?.[playerId] ?? 0;
   const isHumanSeat = (playerId) => Array.isArray(humanPlayerIds)
     && humanPlayerIds.includes(playerId);
-  const debugHandFor = (playerId) => (
-    debugOpen ? debugState?.all_player_hands?.[playerId] : null
-  );
+  const debugHandFor = () => null;
 
   if (!gameState) {
     return (
@@ -172,19 +174,22 @@ const GameBoard = ({
                   key={speed}
                   type="button"
                   className={aiSpeed === speed ? 'active' : ''}
+                  disabled={!canControlRoom}
                   onClick={() => handleSpeedChange(speed)}
                 >
                   {speed === 'fast' ? '极速' : speed === 'slow' ? '慢速' : '正常'}
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className={`debug-toggle ${debugOpen ? 'active' : ''}`}
-              onClick={handleDebugToggle}
-            >
-              调测
-            </button>
+            {canUseDebug && (
+              <button
+                type="button"
+                className={`debug-toggle ${debugOpen ? 'active' : ''}`}
+                onClick={handleDebugToggle}
+              >
+                调测
+              </button>
+            )}
           </div>
 
           <div className="top-player-zone">
@@ -322,11 +327,12 @@ const GameBoard = ({
           )}
         </div>
 
-        {debugOpen && (
+        {debugOpen && debugState && (
           <DebugPanel
             debugState={debugState}
             currentPlayer={activePlayer}
             onSelectAction={handleDebugActionSelect}
+            onClose={handleDebugToggle}
           />
         )}
       </div>

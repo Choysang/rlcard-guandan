@@ -52,14 +52,13 @@ class Game:
     # ------------------------------------------------------------------
 
     def init_game(self):
-        """Create the env, build agents, reset and auto-play opening AI turns."""
+        """Create the env, build agents and reset the match state."""
         np_random = np.random.RandomState(self.seed)
         self.env = guandan_rlcard.make({'seed': self.seed, 'perfect_info': True})
         self.agents = build_agents(self.player_config, np_random)
         self.env.set_agents(self.agents)
         self.env.reset()
         logger.info('Game initialised; humans=%s', self.human_player_ids)
-        self._auto_advance()
 
     # ------------------------------------------------------------------
     # Turn flow
@@ -186,9 +185,14 @@ class Game:
             (time.perf_counter() - start) * 1000, 3)
         return result
 
-    def frontend_payload(self, viewer_player_id=None, include_debug=None):
-        include_debug = self.debug_enabled if include_debug is None \
-            else include_debug
+    def frontend_payload(self, viewer_player_id=None, include_debug=None,
+                         debug_allowed=None, viewer_can_debug=None,
+                         viewer_is_host=False):
+        include_debug = False if include_debug is None else include_debug
+        debug_allowed = self.debug_enabled if debug_allowed is None \
+            else bool(debug_allowed)
+        viewer_can_debug = include_debug if viewer_can_debug is None \
+            else bool(viewer_can_debug)
 
         def build_play():
             return build_play_state(
@@ -199,6 +203,13 @@ class Game:
             )
 
         play_state = self._time_call('state_ms', build_play)
+        play_state.update({
+            'ai_speed': self.ai_speed,
+            'debug_enabled': self.debug_enabled,
+            'debug_allowed': debug_allowed,
+            'viewer_can_debug': viewer_can_debug,
+            'viewer_is_host': bool(viewer_is_host),
+        })
         debug_state = None
         if include_debug:
             debug_state = build_debug_state(

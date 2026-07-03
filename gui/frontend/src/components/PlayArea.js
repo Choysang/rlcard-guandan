@@ -1,5 +1,6 @@
 import Card from './Card';
 import './PlayArea.css';
+import { getCurrentTablePlay } from '../utils/playAreaState';
 
 const RANK_NAMES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -17,21 +18,7 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
 
   const currentRank = gameState.current_rank || 0;
   const rankName = RANK_NAMES[currentRank] || currentRank;
-  const greaterAction = gameState.greaterAction || null;
-  const greaterPos = gameState.greaterPos || -1;
-
-  // 获取当前最大的牌
-  const getCurrentPlay = () => {
-    if (greaterAction && greaterAction[0] !== 'PASS') {
-      return {
-        playerId: greaterPos,
-        action: greaterAction
-      };
-    }
-    return null;
-  };
-
-  const currentPlay = getCurrentPlay();
+  const currentPlay = getCurrentTablePlay(gameState);
 
   // 格式化动作描述
   const formatAction = (action) => {

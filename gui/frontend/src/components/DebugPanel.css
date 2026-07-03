@@ -1,11 +1,17 @@
 .debug-panel {
-  width: min(380px, 33vw);
-  height: 100%;
+  --debug-drawer-width: min(360px, 36vw);
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: var(--debug-drawer-width);
   overflow: auto;
   padding: 12px;
   background: #101a1d;
   color: #e9f2ef;
   border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -18px 0 34px rgba(0, 0, 0, 0.32);
 }
 
 .debug-panel-header {
@@ -41,6 +47,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.debug-header-actions {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.debug-close {
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #e9f2ef;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.debug-close:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .debug-section {
@@ -81,6 +107,9 @@
 .debug-actions {
   display: grid;
   gap: 4px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .debug-action-btn {
@@ -112,6 +141,8 @@
   margin: 0;
   white-space: pre-wrap;
   font-size: 11px;
+  max-height: 220px;
+  overflow: auto;
 }
 
 @media (max-width: 900px) {

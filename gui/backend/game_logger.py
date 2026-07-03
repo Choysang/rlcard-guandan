@@ -2,6 +2,7 @@
 
 import json
 import os
+import threading
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +23,7 @@ class GameLogger:
             'GUANDAN_GUI_LOG_DIR', DEFAULT_LOG_DIR))
         self.clock = clock
         self.path = self.log_dir / 'guandan_gui.jsonl'
+        self._lock = threading.Lock()
 
     @staticmethod
     def _new_id(prefix):
@@ -37,20 +39,22 @@ class GameLogger:
         return self._new_id('game')
 
     def write_event(self, event_type, payload):
-        self.log_dir.mkdir(parents=True, exist_ok=True)
         event = {'event_type': event_type, 'timestamp': self.clock()}
         event.update(payload)
-        with self.path.open('a', encoding='utf-8') as fh:
-            fh.write(json.dumps(event, ensure_ascii=False, sort_keys=True))
-            fh.write('\n')
+        line = json.dumps(event, ensure_ascii=False, sort_keys=True) + '\n'
+        with self._lock:
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+            with self.path.open('a', encoding='utf-8') as fh:
+                fh.write(line)
 
     def log_action(self, room_id, game_id, participant_id, player_id,
                    is_human, action, legal_action_count, current_rank,
-                   num_cards_left, timings, account_id=None):
+                   num_cards_left, timings, account_id=None, session_id=None):
         self.write_event('action', {
             'room_id': room_id,
             'game_id': game_id,
             'participant_id': participant_id,
+            'session_id': session_id,
             'account_id': account_id,
             'player_id': player_id,
             'is_human': bool(is_human),
