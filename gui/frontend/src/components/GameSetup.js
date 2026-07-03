@@ -32,7 +32,6 @@ const GameSetup = ({ onGameStart, loading }) => {
     { type: 'ai', agent: DEFAULT_AI },
   ]);
   const [agentNames, setAgentNames] = useState(DEFAULT_AGENTS);
-  const [nickname, setNickname] = useState('');
   const [debugEnabled, setDebugEnabled] = useState(false);
 
   // 从后端获取可用的 AI 列表（失败则用内置列表）。
@@ -93,7 +92,6 @@ const GameSetup = ({ onGameStart, loading }) => {
     onGameStart({
       agentTypes,
       human_player_ids,
-      nickname: nickname.trim(),
       debug_enabled: debugEnabled,
     });
   };
@@ -160,15 +158,6 @@ const GameSetup = ({ onGameStart, loading }) => {
 
         <div className="start-section">
           <div className="setup-extra-options">
-            <label htmlFor="nickname-input">昵称（可选）</label>
-            <input
-              id="nickname-input"
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              maxLength="24"
-              placeholder="调测玩家"
-            />
             <label className="debug-room-toggle">
               <input
                 type="checkbox"

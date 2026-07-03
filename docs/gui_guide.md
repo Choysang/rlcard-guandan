@@ -158,12 +158,14 @@ error and you can pick another seat type.
 * **Action format.** The action format is the same as the engine:
   `[combo_type, key_rank, [cards]]`.
 * **Anonymous logging.** The backend appends JSONL events to
-  `logs/gui/guandan_gui.jsonl` by default. Player-scoped events carry
-  generated `participant_id`, server-shaped `session_id`, `game_id` and
+  `logs/gui/guandan_gui.jsonl` by default. Every event carries
+  `schema_version: 1`. Player-scoped events carry generated
+  `participant_id`, server-shaped `session_id`, `game_id` and
   `account_id: null`; room-scoped events carry a `participants` list instead
-  of pretending to belong to one player. Browser-held `resumeToken` and
-  `hostToken` are not logged. Free-form fields such as nicknames are not
-  persisted.
+  of pretending to belong to one player. Timing fields include state
+  construction, AI decision, environment step, broadcast, and AI-loop timings
+  when available. Browser-held `resumeToken` and `hostToken` are not logged.
+  Free-form fields such as nicknames are not persisted.
 * **Deployment boundary.** Rooms are stored in process memory. The current
   server is suitable for local/LAN testing and single-process deployment.
   Multi-worker or multi-instance production needs external room/session

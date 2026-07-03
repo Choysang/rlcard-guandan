@@ -39,7 +39,11 @@ class GameLogger:
         return self._new_id('game')
 
     def write_event(self, event_type, payload):
-        event = {'event_type': event_type, 'timestamp': self.clock()}
+        event = {
+            'event_type': event_type,
+            'schema_version': 1,
+            'timestamp': self.clock(),
+        }
         event.update(payload)
         line = json.dumps(event, ensure_ascii=False, sort_keys=True) + '\n'
         with self._lock:

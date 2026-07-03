@@ -125,7 +125,8 @@ Split frontend state into two layers.
 - match over flag and result when available
 - legal actions only for the acting human client
 
-`debug_state` is sent only when debug is enabled:
+`debug_state` is sent only when debug is enabled and the viewer is authorized
+by the host debug token:
 
 - all player hands
 - other player hands
@@ -170,8 +171,9 @@ The first release uses anonymous IDs:
 - `participant_id`
 - `session_id`
 - `game_id`
-- optional nickname
 - `account_id: null`
+
+Free-form nickname/config fields are not persisted in the first release.
 
 Write JSONL events for:
 
@@ -183,7 +185,11 @@ Write JSONL events for:
 - disconnects
 - match summary
 
-Action events include timestamp, room id, game id, player id, human/AI flag, action, legal action count, current rank, remaining card counts, and timings.
+Events include `schema_version: 1` for downstream import. Action events
+include timestamp, room id, game id, player id, human/AI flag, action,
+legal action count, current rank, remaining card counts, and timings such as
+`state_ms`, `ai_decision_ms`, `env_step_ms`, `broadcast_ms`, and
+`ai_advance_loop_ms` when available.
 
 This is enough for algorithm strength analysis and user behavior review without requiring accounts. A future account system can bind anonymous participant ids to accounts.
 

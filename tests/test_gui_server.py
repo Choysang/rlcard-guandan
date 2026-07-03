@@ -281,3 +281,30 @@ def test_room_created_log_uses_anonymous_whitelisted_config(isolated_server):
     serialized = json.dumps(created, ensure_ascii=False)
     assert 'alice@example.com' not in serialized
     assert 'secret-token' not in serialized
+
+
+def test_state_emission_records_broadcast_timing():
+    room_id, clients = create_started_room()
+    for client in clients:
+        client.get_received()
+
+    server._emit_state_to_room(room_id)
+
+    assert 'broadcast_ms' in server.rooms[room_id]['game'].last_timings
+
+
+def test_ai_driver_records_total_loop_timing():
+    host = make_client()
+    host.emit('create_room', {
+        'sessionId': SESSION_HOST,
+        'player_config': {
+            'human_player_ids': [0],
+            'agentTypes': {'1': 'random', '2': 'random', '3': 'random'},
+            'ai_speed': 'fast',
+        },
+    })
+    room_id = find_event(host, 'room_created')['roomId']
+
+    server._drive_ai(room_id)
+
+    assert 'ai_advance_loop_ms' in server.rooms[room_id]['game'].last_timings

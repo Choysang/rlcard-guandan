@@ -15,6 +15,7 @@ import hmac
 import re
 import socket
 import threading
+import time
 import uuid
 import webbrowser
 
@@ -132,8 +133,11 @@ def _emit_state_to_room(room_id, event='update_state'):
     room = rooms.get(room_id)
     if not room:
         return
+    start = time.perf_counter()
     for sid, seat in list(room['players'].items()):
         _emit_state_to_sid(room_id, sid, event=event)
+    room['game'].last_timings['broadcast_ms'] = round(
+        (time.perf_counter() - start) * 1000, 3)
 
 
 def _identity_for_player(room, player_id):
@@ -241,6 +245,7 @@ def _log_match_summary(room_id):
 
 def _drive_ai(room_id):
     """Drive AI/auto turns according to the room speed mode."""
+    loop_start = time.perf_counter()
     try:
         while True:
             room = rooms.get(room_id)
@@ -278,6 +283,8 @@ def _drive_ai(room_id):
         room = rooms.get(room_id)
         if room:
             with room['lock']:
+                room['game'].last_timings['ai_advance_loop_ms'] = round(
+                    (time.perf_counter() - loop_start) * 1000, 3)
                 room['ai_driving'] = False
 
 

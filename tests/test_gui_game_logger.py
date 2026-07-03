@@ -25,6 +25,7 @@ def test_logger_writes_event_with_ids_and_payload(tmp_path):
     lines = read_lines(tmp_path / 'guandan_gui.jsonl')
     assert lines == [{
         'event_type': 'game_start',
+        'schema_version': 1,
         'timestamp': '2026-07-03T00:00:00Z',
         'room_id': 'ABC123',
         'game_id': 'game-1',
@@ -51,6 +52,7 @@ def test_logger_action_event_keeps_action_and_timings(tmp_path):
 
     line = read_lines(tmp_path / 'guandan_gui.jsonl')[0]
     assert line['event_type'] == 'action'
+    assert line['schema_version'] == 1
     assert line['participant_id'] == 'p-1'
     assert line['action'] == ['Single', '3', ['S3']]
     assert line['timings']['env_step_ms'] == 0.2
