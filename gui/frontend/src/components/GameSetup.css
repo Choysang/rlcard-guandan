@@ -197,6 +197,36 @@
   margin-top: 40px;
 }
 
+.setup-extra-options {
+  display: grid;
+  grid-template-columns: minmax(110px, 160px) minmax(220px, 1fr);
+  gap: 10px 14px;
+  align-items: center;
+  max-width: 620px;
+  margin: 0 auto 18px;
+  color: #333;
+  text-align: left;
+}
+
+.setup-extra-options input[type="text"] {
+  min-height: 40px;
+  border: 1px solid #cfd4e6;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #222;
+  background: #fff;
+}
+
+.debug-room-toggle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #444;
+}
+
 .start-btn {
   font-size: 1.2rem;
   padding: 15px 40px;

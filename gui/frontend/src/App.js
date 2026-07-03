@@ -7,6 +7,7 @@ import guandanService from './services/GuandanService'; // Import the instance
 function App() {
   const [appState, setAppState] = useState('Lobby'); // Lobby, WaitingInRoom, InGame
   const [gameState, setGameState] = useState(null);
+  const [debugState, setDebugState] = useState(null);
   const [currentPlayer, setCurrentPlayer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,34 +15,39 @@ function App() {
   
   const [roomId, setRoomId] = useState('');
   const [playerId, setPlayerId] = useState(null);
+  const [participantId, setParticipantId] = useState(null);
   const [humanPlayerIds, setHumanPlayerIds] = useState([]);
 
   // 设置socket事件监听器
   const setupSocketListeners = useCallback(() => {
-    guandanService.on('room_created', ({ roomId, playerId }) => {
+    guandanService.on('room_created', ({ roomId, playerId, participantId }) => {
       setRoomId(roomId);
       setPlayerId(playerId);
+      setParticipantId(participantId || null);
       setAppState('WaitingInRoom');
       setLoading(false);
     });
 
-    guandanService.on('joined_room', ({ roomId, playerId }) => {
+    guandanService.on('joined_room', ({ roomId, playerId, participantId }) => {
       setRoomId(roomId);
       setPlayerId(playerId);
+      setParticipantId(participantId || null);
       setAppState('WaitingInRoom');
       setLoading(false);
     });
 
-    guandanService.on('game_started', ({ state, current_player }) => {
+    guandanService.on('game_started', ({ state, debug_state, current_player }) => {
       setGameState(state);
+      setDebugState(debug_state || null);
       setCurrentPlayer(current_player);
       setHumanPlayerIds(state.human_player_ids || []);
       setAppState('InGame');
       setLoading(false);
     });
 
-    guandanService.on('update_state', ({ state, current_player }) => {
+    guandanService.on('update_state', ({ state, debug_state, current_player }) => {
       setGameState(state);
+      setDebugState(debug_state || null);
       setCurrentPlayer(current_player);
       setHumanPlayerIds(state.human_player_ids || []);
     });
@@ -115,10 +121,12 @@ function App() {
     // Reset all state to go back to the lobby
     setAppState('Lobby');
     setGameState(null);
+    setDebugState(null);
     setCurrentPlayer(null);
     setError(null);
     setRoomId('');
     setPlayerId(null);
+    setParticipantId(null);
     setHumanPlayerIds([]);
   };
 
@@ -138,11 +146,16 @@ function App() {
           gameState && (
             <GameBoard
               gameState={gameState}
+              debugState={debugState}
               humanPlayerIds={humanPlayerIds}
               thisPlayerId={playerId} // Pass this client's player ID
+              participantId={participantId}
+              roomId={roomId}
               currentPlayer={currentPlayer}
               onAction={handleAction}
               onRestart={handleRestart}
+              onSetAiSpeed={(speed) => guandanService.setAiSpeed(roomId, speed)}
+              onSetDebugMode={(enabled) => guandanService.setDebugMode(roomId, enabled)}
               loading={loading}
             />
           )

@@ -32,6 +32,8 @@ const GameSetup = ({ onGameStart, loading }) => {
     { type: 'ai', agent: DEFAULT_AI },
   ]);
   const [agentNames, setAgentNames] = useState(DEFAULT_AGENTS);
+  const [nickname, setNickname] = useState('');
+  const [debugEnabled, setDebugEnabled] = useState(false);
 
   // 从后端获取可用的 AI 列表（失败则用内置列表）。
   useEffect(() => {
@@ -88,7 +90,12 @@ const GameSetup = ({ onGameStart, loading }) => {
       return;
     }
 
-    onGameStart({ agentTypes, human_player_ids });
+    onGameStart({
+      agentTypes,
+      human_player_ids,
+      nickname: nickname.trim(),
+      debug_enabled: debugEnabled,
+    });
   };
 
   const labelFor = (name) => AGENT_LABELS[name]?.name || name;
@@ -152,6 +159,25 @@ const GameSetup = ({ onGameStart, loading }) => {
         </div>
 
         <div className="start-section">
+          <div className="setup-extra-options">
+            <label htmlFor="nickname-input">昵称（可选）</label>
+            <input
+              id="nickname-input"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength="24"
+              placeholder="调测玩家"
+            />
+            <label className="debug-room-toggle">
+              <input
+                type="checkbox"
+                checked={debugEnabled}
+                onChange={(e) => setDebugEnabled(e.target.checked)}
+              />
+              <span>创建调测房间（显示明牌和耗时）</span>
+            </label>
+          </div>
           <button
             className="btn btn-primary start-btn"
             onClick={handleStartGame}

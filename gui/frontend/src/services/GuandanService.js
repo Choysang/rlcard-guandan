@@ -120,6 +120,16 @@ class GuandanService {
     this.socket.emit('player_action', { roomId, playerId, action });
   }
 
+  setAiSpeed(roomId, speed) {
+    if (!this.socket) return;
+    this.socket.emit('set_ai_speed', { roomId, speed });
+  }
+
+  setDebugMode(roomId, enabled) {
+    if (!this.socket) return;
+    this.socket.emit('set_debug_mode', { roomId, enabled });
+  }
+
   on(eventName, callback) {
     if (this.socket) {
       this.socket.off(eventName); // 避免重复注册造成回调多次触发
