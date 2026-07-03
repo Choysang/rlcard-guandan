@@ -16,14 +16,18 @@ deals just like a real game.
 """
 
 import logging
+import time
+import uuid
 
 import numpy as np
 
 import guandan_rlcard
 from .agents import build_agents
-from .state_adapter import build_frontend_state
+from .state_adapter import build_debug_state, build_play_state
 
 logger = logging.getLogger('guandan.gui')
+
+AI_SPEEDS = {'fast', 'normal', 'slow'}
 
 
 class Game:
@@ -35,6 +39,13 @@ class Game:
         self.seed = seed
         self.env = None
         self.agents = None
+        self.debug_enabled = bool(player_config.get('debug_enabled', False))
+        self.ai_speed = player_config.get('ai_speed', 'normal')
+        if self.ai_speed not in AI_SPEEDS:
+            self.ai_speed = 'normal'
+        self.game_id = player_config.get('game_id') or f'game_{uuid.uuid4().hex}'
+        self.last_timings = {}
+        self.last_action_meta = None
 
     # ------------------------------------------------------------------
     # Setup
@@ -88,8 +99,17 @@ class Game:
         pid = self.env.get_player_id()
         state = self.env.get_state(pid)
         actions = state.get('actions')
-        action = self.agents[pid].step(state) if actions else []
-        self.env.step(action)
+        action = self._time_call(
+            'ai_decision_ms',
+            lambda: self.agents[pid].step(state) if actions else [],
+        )
+        self._time_call('env_step_ms', lambda: self.env.step(action))
+        self.last_action_meta = {
+            'player_id': pid,
+            'is_human': False,
+            'action': action,
+            'legal_action_count': len(actions or []),
+        }
         return True
 
     def is_waiting_for_human(self):
@@ -124,7 +144,13 @@ class Game:
             raise ValueError('动作不合法或已过期，请重新选择。')
 
         logger.info('Human seat %s plays %s', player_id, action)
-        self.env.step(action)
+        self._time_call('env_step_ms', lambda: self.env.step(action))
+        self.last_action_meta = {
+            'player_id': player_id,
+            'is_human': True,
+            'action': action,
+            'legal_action_count': len(legal_actions),
+        }
 
     @staticmethod
     def _match_action(intent, legal_actions):
@@ -145,5 +171,45 @@ class Game:
     # Views
     # ------------------------------------------------------------------
 
+    def set_ai_speed(self, speed):
+        if speed not in AI_SPEEDS:
+            raise ValueError(f'Unsupported AI speed: {speed}')
+        self.ai_speed = speed
+
+    def set_debug_enabled(self, enabled):
+        self.debug_enabled = bool(enabled)
+
+    def _time_call(self, name, fn):
+        start = time.perf_counter()
+        result = fn()
+        self.last_timings[name] = round(
+            (time.perf_counter() - start) * 1000, 3)
+        return result
+
+    def frontend_payload(self, viewer_player_id=None, include_debug=None):
+        include_debug = self.debug_enabled if include_debug is None \
+            else include_debug
+
+        def build_play():
+            return build_play_state(
+                self.env,
+                self.human_player_ids,
+                viewer_player_id,
+                timings=self.last_timings,
+            )
+
+        play_state = self._time_call('state_ms', build_play)
+        debug_state = None
+        if include_debug:
+            debug_state = build_debug_state(
+                self.env,
+                self.human_player_ids,
+                seed=self.seed,
+                room_config=self.player_config,
+                timings=self.last_timings,
+            )
+        return {'play_state': play_state, 'debug_state': debug_state}
+
     def frontend_state(self):
-        return build_frontend_state(self.env, self.human_player_ids)
+        viewer = self.human_player_ids[0] if self.human_player_ids else None
+        return self.frontend_payload(viewer)['play_state']
