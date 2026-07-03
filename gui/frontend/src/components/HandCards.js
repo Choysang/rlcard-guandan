@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import Card from './Card';
 import './HandCards.css';
 import { applyCardSelection, dragModeForIndex } from '../utils/cardSelection';
+import { handCardStyle } from '../utils/handLayout';
 
 // Card width and the widest the fan is allowed to get. The horizontal step
 // between cards shrinks as the hand grows, but never below MIN_STEP so the
@@ -83,17 +84,12 @@ const HandCards = ({ cards, selectedCards, setSelected, isInteractive }) => {
       >
         {cards.map((cardString, index) => {
           const isSelected = selectedCards.includes(index);
-          const leftPosition = index * step;
           return (
             <div
               key={`${cardString}-${index}`}
               data-card-index={index}
               className={`hand-card ${isSelected ? 'selected' : ''} ${isInteractive ? 'interactive' : ''}`}
-              style={{
-                left: `${leftPosition}px`,
-                top: isSelected ? '-22px' : '0px',
-                zIndex: isSelected ? 1000 + index : index,
-              }}
+              style={handCardStyle({ index, step, selected: isSelected })}
               role="button"
               tabIndex={isInteractive ? 0 : -1}
               aria-pressed={isSelected}

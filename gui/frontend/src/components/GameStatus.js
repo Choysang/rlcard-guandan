@@ -1,58 +1,72 @@
 import { useState } from 'react';
 import './GameStatus.css';
+import {
+  formatRecentPlays,
+  formatRemainingCounts,
+  hasUrgentRoundStatus,
+} from '../utils/statusDock';
 
-const RANK_NAMES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-
-// Slim, collapsible status bar pinned to the top of the board. Collapsed by
-// default; the details drop down as an overlay so opening it never pushes
-// the table around.
+// Compact, corner-pinned table dock. It stays out of the player zones by
+// default and opens into utility information instead of duplicating the
+// center table's current-turn display.
 const GameStatus = ({ gameState, currentPlayer, onRestart }) => {
   const [open, setOpen] = useState(false);
 
   if (!gameState) return null;
 
-  const rank = gameState.current_rank || 0;
-  const rankName = RANK_NAMES[rank] || '?';
-  const progress = Number.isFinite(gameState.trace_length)
-    ? gameState.trace_length
-    : Array.isArray(gameState.trace) ? gameState.trace.length : 0;
+  const recentPlays = formatRecentPlays(gameState.recent_plays).slice(-4);
+  const remainingCounts = formatRemainingCounts(gameState.num_cards_left);
+  const urgent = hasUrgentRoundStatus(gameState);
 
   return (
     <div className={`game-status ${open ? 'open' : ''}`}>
-      <div className="status-bar">
-        <button
-          type="button"
-          className="status-toggle"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-        >
-          <span className="caret">{open ? '▾' : '▸'}</span>
-          游戏状态
-        </button>
-
-        <div className="status-quick">
-          <span className="chip">级别 {rankName}</span>
-          <span className="chip">当前 玩家{currentPlayer}</span>
-          <span className="chip">出牌 {progress}</span>
-          {gameState.is_over && <span className="chip chip-over">已结束</span>}
-          {gameState.round_completed && !gameState.is_over && (
-            <span className="chip chip-round">本轮结束</span>
-          )}
-        </div>
-
-        <button type="button" className="btn btn-danger status-restart" onClick={onRestart}>
-          重新开始
-        </button>
-      </div>
+      <button
+        type="button"
+        className="status-dock-button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={`牌局工具面板，当前玩家${currentPlayer}`}
+      >
+        <span className="dock-caret">{open ? '▾' : '▸'}</span>
+        <span>牌局</span>
+        {urgent && (
+          <span className={`dock-alert ${gameState.is_over ? 'game-over' : ''}`}>
+            {gameState.is_over ? '结束' : '换轮'}
+          </span>
+        )}
+      </button>
 
       {open && (
         <div className="status-details">
-          <div className="detail-row"><span>当前级别</span><strong>{rankName}</strong></div>
-          <div className="detail-row"><span>当前回合</span><strong>玩家{currentPlayer}</strong></div>
-          <div className="detail-row"><span>累计出牌次数</span><strong>{progress}</strong></div>
-          {gameState.is_over && (
-            <div className="detail-row"><span>状态</span><strong>🏆 游戏结束</strong></div>
-          )}
+          <section className="status-section">
+            <div className="status-section-title">最近出牌</div>
+            <div className="recent-play-list">
+              {recentPlays.length ? recentPlays.map((play) => (
+                <div key={play.playerId} className={`recent-play-row ${play.pass ? 'pass' : ''}`}>
+                  <span>{play.label}</span>
+                  <strong>{play.text}</strong>
+                </div>
+              )) : (
+                <div className="status-empty">暂无出牌</div>
+              )}
+            </div>
+          </section>
+
+          <section className="status-section">
+            <div className="status-section-title">余牌</div>
+            <div className="remaining-grid">
+              {remainingCounts.map((item) => (
+                <div key={item.playerId} className={`remaining-cell ${item.danger ? 'danger' : ''}`}>
+                  <span>{item.label}</span>
+                  <strong>{item.count}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <button type="button" className="btn btn-danger status-restart" onClick={onRestart}>
+            重新开始
+          </button>
         </div>
       )}
     </div>

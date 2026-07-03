@@ -63,13 +63,8 @@
   position: absolute;
   top: 10px;
   left: 14px;
-  right: 250px;
-  z-index: 20;
+  z-index: 22;
   margin-bottom: 0;
-}
-
-.game-board-shell.debug-open .game-board .game-status {
-  right: calc(var(--debug-drawer-width) + 24px);
 }
 
 .board-toolbar {
@@ -273,7 +268,9 @@
   }
 
   .game-board .game-status {
-    display: none;
+    top: 6px;
+    left: 8px;
+    width: 112px;
   }
 
   .board-toolbar {

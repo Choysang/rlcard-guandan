@@ -1,71 +1,46 @@
 .game-status {
   position: relative;
-  z-index: 20;
-  margin-bottom: 8px;
+  z-index: 22;
+  width: 168px;
 }
 
-/* Slim always-visible bar */
-.status-bar {
+.status-dock-button {
+  width: 100%;
+  min-height: 34px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.12);
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(6, 20, 18, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 0 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
   backdrop-filter: blur(8px);
 }
 
-.status-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.status-toggle .caret {
+.dock-caret {
   font-size: 12px;
   opacity: 0.85;
 }
 
-.status-quick {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-}
-
-.status-quick .chip {
-  background: rgba(255, 255, 255, 0.18);
+.dock-alert {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #1f7a5c;
   color: #fff;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 11px;
 }
 
-.status-quick .chip-over {
-  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+.dock-alert.game-over {
+  background: #bd3b34;
 }
 
-.status-quick .chip-round {
-  background: linear-gradient(45deg, #4ecdc4, #44a08d);
-}
-
-.status-restart {
-  margin: 0;
-  padding: 6px 14px;
-  font-size: 13px;
-  border-radius: 10px;
-  white-space: nowrap;
+.status-dock-button:hover {
+  background: rgba(13, 43, 36, 0.84);
 }
 
 /* Dropdown details overlay (does not push the table) */
@@ -73,43 +48,123 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 220px;
+  width: 236px;
   background: rgba(255, 255, 255, 0.97);
-  color: #333;
-  border-radius: 12px;
-  padding: 12px 16px;
+  color: #20242b;
+  border-radius: 8px;
+  padding: 10px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
   z-index: 30;
 }
 
-.status-details .detail-row {
-  display: flex;
-  justify-content: space-between;
+.status-section + .status-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e7e9ef;
+}
+
+.status-section-title {
+  margin-bottom: 6px;
+  color: #5a6370;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.recent-play-row {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 8px;
   align-items: center;
-  gap: 24px;
-  padding: 6px 0;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.recent-play-row span,
+.remaining-cell span {
+  color: #697281;
+}
+
+.recent-play-row strong {
+  overflow: hidden;
+  color: #1e2d2a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-play-row.pass strong {
+  color: #8a929d;
+}
+
+.status-empty {
+  color: #8a929d;
+  font-size: 12px;
+}
+
+.remaining-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.remaining-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: #eef3f0;
+  font-size: 12px;
+}
+
+.remaining-cell strong {
+  color: #0e4f3d;
   font-size: 14px;
-  border-bottom: 1px solid #eee;
 }
 
-.status-details .detail-row:last-child {
-  border-bottom: none;
+.remaining-cell.danger {
+  background: #fff1ea;
 }
 
-.status-details .detail-row span {
-  color: #666;
+.remaining-cell.danger strong {
+  color: #bd3b34;
 }
 
-.status-details .detail-row strong {
-  color: #333;
+.status-restart {
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 12px;
+  font-size: 13px;
+  border-radius: 8px;
 }
 
-@media (max-width: 768px) {
-  .status-quick {
-    justify-content: flex-start;
+@media (max-width: 900px) and (orientation: landscape) {
+  .status-dock-button {
+    min-height: 30px;
+    padding: 0 8px;
+    font-size: 12px;
   }
-  .status-quick .chip {
-    font-size: 11px;
-    padding: 2px 8px;
+
+  .status-details {
+    top: 0;
+    left: calc(100% + 6px);
+    width: 212px;
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    padding: 8px;
+  }
+
+  .status-section + .status-section {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .recent-play-row {
+    padding: 2px 0;
+  }
+
+  .status-restart {
+    margin-top: 8px;
+    padding: 6px 10px;
   }
 }
