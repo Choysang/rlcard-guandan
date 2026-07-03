@@ -37,8 +37,20 @@ curl -fsS http://127.0.0.1:5080/healthz
 ```
 
 Use a port that is not already occupied. The container listens on port `5000`
-internally; `GUANDAN_GUI_PUBLIC_PORT` controls the host port. Override
+internally; `GUANDAN_GUI_PUBLIC_PORT` controls the host port. By default the
+host port binds to `127.0.0.1` so a reverse proxy such as Caddy can publish it
+without exposing the container port directly. Set `GUANDAN_GUI_BIND=0.0.0.0`
+only when you intentionally want direct public port access. Override
 `GUANDAN_GUI_IMAGE` to pin a specific tag or digest.
+
+Example Caddy route for an IP-only test entry:
+
+```caddyfile
+http://8.219.61.189 {
+    encode gzip zstd
+    reverse_proxy 127.0.0.1:5080
+}
+```
 
 ## Update
 

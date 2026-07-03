@@ -4,7 +4,7 @@ services:
     container_name: guandan-gui
     restart: unless-stopped
     ports:
-      - "${GUANDAN_GUI_PUBLIC_PORT:-5000}:5000"
+      - "${GUANDAN_GUI_BIND:-127.0.0.1}:${GUANDAN_GUI_PUBLIC_PORT:-5000}:5000"
     environment:
       GUANDAN_GUI_PORT: "5000"
       GUANDAN_GUI_LOG_DIR: "/data/logs/gui"
