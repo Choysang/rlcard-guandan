@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 import guandanService from '../services/GuandanService';
+import {
+  EMPTY_LLM_CONFIG,
+  buildRoomConfig,
+  hasCompleteLlmConfig,
+  isUnsafeLlmOrigin,
+  needsLlmConfig,
+} from '../utils/gameSetupConfig';
 import './GameSetup.css';
 
 // guandan_rlcard baseline registry -> friendly label. Agents needing
@@ -33,6 +40,7 @@ const GameSetup = ({ onGameStart, loading }) => {
   ]);
   const [agentNames, setAgentNames] = useState(DEFAULT_AGENTS);
   const [debugEnabled, setDebugEnabled] = useState(false);
+  const [llmConfig, setLlmConfig] = useState(EMPTY_LLM_CONFIG);
 
   // 从后端获取可用的 AI 列表（失败则用内置列表）。
   useEffect(() => {
@@ -53,6 +61,7 @@ const GameSetup = ({ onGameStart, loading }) => {
   }, []);
 
   const humanPlayerCount = playerConfigs.filter((p) => p.type === 'human').length;
+  const llmRequired = needsLlmConfig(playerConfigs);
 
   const updateConfig = (index, changes) => {
     setPlayerConfigs((prev) =>
@@ -72,28 +81,27 @@ const GameSetup = ({ onGameStart, loading }) => {
     updateConfig(index, { agent: agentType });
   };
 
+  const updateLlmConfig = (field, value) => {
+    setLlmConfig((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleStartGame = () => {
-    const agentTypes = {};
-    const human_player_ids = [];
-
-    playerConfigs.forEach((p, index) => {
-      if (p.type === 'ai') {
-        agentTypes[index.toString()] = p.agent;
-      } else {
-        human_player_ids.push(index);
-      }
-    });
-
-    if (human_player_ids.length === 0) {
+    if (humanPlayerCount === 0) {
       alert('必须至少选择一名人类玩家！');
       return;
     }
 
-    onGameStart({
-      agentTypes,
-      human_player_ids,
-      debug_enabled: debugEnabled,
-    });
+    if (llmRequired && isUnsafeLlmOrigin(window.location)) {
+      alert('公网使用大模型 LLM 必须通过 HTTPS 域名访问，不能在 HTTP 页面输入 API Key。');
+      return;
+    }
+
+    if (llmRequired && !hasCompleteLlmConfig(llmConfig)) {
+      alert('使用大模型 LLM 需要填写模型名称、Base URL 和 API Key。');
+      return;
+    }
+
+    onGameStart(buildRoomConfig(playerConfigs, debugEnabled, llmConfig));
   };
 
   const labelFor = (name) => AGENT_LABELS[name]?.name || name;
@@ -147,7 +155,9 @@ const GameSetup = ({ onGameStart, loading }) => {
                   </select>
                   {AGENT_LABELS[config.agent]?.weights && (
                     <p className="agent-description">
-                      ⚙️ 该 AI 需要下载模型权重，详见 docs/gui_guide.md。
+                      {config.agent === 'llm'
+                        ? '⚙️ 大模型 LLM 需要在下方填写模型、Base URL 和 API Key。'
+                        : '⚙️ 该 AI 需要下载模型权重，详见 docs/gui_guide.md。'}
                     </p>
                   )}
                 </div>
@@ -155,6 +165,45 @@ const GameSetup = ({ onGameStart, loading }) => {
             </div>
           ))}
         </div>
+
+        {llmRequired && (
+          <div className="llm-config-panel">
+            <div className="llm-config-header">
+              <h3>大模型 LLM 配置</h3>
+              <p>仅本局使用，API Key 不会写入日志。</p>
+            </div>
+            <div className="llm-config-grid">
+              <label>
+                <span>模型名称</span>
+                <input
+                  type="text"
+                  value={llmConfig.model}
+                  onChange={(e) => updateLlmConfig('model', e.target.value)}
+                  placeholder="deepseek-chat"
+                />
+              </label>
+              <label>
+                <span>Base URL</span>
+                <input
+                  type="url"
+                  value={llmConfig.baseUrl}
+                  onChange={(e) => updateLlmConfig('baseUrl', e.target.value)}
+                  placeholder="https://api.deepseek.com/"
+                />
+              </label>
+              <label className="llm-api-key-field">
+                <span>API Key</span>
+                <input
+                  type="password"
+                  value={llmConfig.apiKey}
+                  onChange={(e) => updateLlmConfig('apiKey', e.target.value)}
+                  placeholder="sk-..."
+                  autoComplete="new-password"
+                />
+              </label>
+            </div>
+          </div>
+        )}
 
         <div className="start-section">
           <div className="setup-extra-options">

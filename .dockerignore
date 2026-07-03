@@ -18,6 +18,7 @@ runs
 *.pt
 *.ckpt
 *.tar
+!guandan_rlcard/baselines/danzero/q_network.ckpt
 gui/frontend/node_modules
 gui/frontend/dist
 gui/frontend/.env

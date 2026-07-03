@@ -23,7 +23,11 @@ import numpy as np
 
 import guandan_rlcard
 from .agents import build_agents
-from .state_adapter import build_debug_state, build_play_state
+from .state_adapter import (
+    build_debug_state,
+    build_play_state,
+    sanitize_room_config,
+)
 
 logger = logging.getLogger('guandan.gui')
 
@@ -34,13 +38,16 @@ class Game:
     """Owns one environment instance and its seat configuration."""
 
     def __init__(self, player_config, seed=None):
-        self.player_config = player_config
-        self.human_player_ids = list(player_config.get('human_player_ids', [0]))
+        self._agent_config = player_config
+        self.player_config = sanitize_room_config(player_config)
+        self.human_player_ids = list(
+            self.player_config.get('human_player_ids', [0]))
         self.seed = seed
         self.env = None
         self.agents = None
-        self.debug_enabled = bool(player_config.get('debug_enabled', False))
-        self.ai_speed = player_config.get('ai_speed', 'normal')
+        self.debug_enabled = bool(
+            self.player_config.get('debug_enabled', False))
+        self.ai_speed = self.player_config.get('ai_speed', 'normal')
         if self.ai_speed not in AI_SPEEDS:
             self.ai_speed = 'normal'
         self.game_id = player_config.get('game_id') or f'game_{uuid.uuid4().hex}'
@@ -55,7 +62,8 @@ class Game:
         """Create the env, build agents and reset the match state."""
         np_random = np.random.RandomState(self.seed)
         self.env = guandan_rlcard.make({'seed': self.seed, 'perfect_info': True})
-        self.agents = build_agents(self.player_config, np_random)
+        self.agents = build_agents(self._agent_config, np_random)
+        self._agent_config = None
         self.env.set_agents(self.agents)
         self.env.reset()
         logger.info('Game initialised; humans=%s', self.human_player_ids)

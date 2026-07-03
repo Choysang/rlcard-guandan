@@ -30,8 +30,8 @@ so there is **one** game implementation, not a separate copy.
 # from the repository root
 pip install -e .                       # the guandan_rlcard engine
 pip install -r gui/backend/requirements.txt   # flask, flask-socketio, ...
-# optional: torch baselines for AI seats (danzero / perfectdan / ...)
-pip install -e ".[ppo]"
+# optional: learned baselines and OpenAI-compatible LLM seats
+pip install -e ".[ppo,llm]"
 
 # frontend
 cd gui/frontend
@@ -83,6 +83,10 @@ Backend (all optional):
 | `GUANDAN_GUI_CORS` | allowed origins (`*` or comma list) | `*` |
 | `GUANDAN_GUI_LOG_DIR` | JSONL event log directory | `logs/gui` |
 | `GUANDAN_GUI_OPEN_BROWSER` | auto-open a browser on start | `false` |
+| `GUANDAN_MODEL_DIR` | root directory for GUI model weights | `/data/weights` |
+| `GUANDAN_DMC_MODEL_TAR` | DMC checkpoint file | `$GUANDAN_MODEL_DIR/dmc/model.tar` |
+| `GUANDAN_DANZERO_PLUS_MODEL_TAR` | DanZero+ checkpoint file | `$GUANDAN_MODEL_DIR/danzero_plus/model.tar` |
+| `GUANDAN_PERFECTDAN_MODEL` | PerfectDan checkpoint file | `$GUANDAN_MODEL_DIR/perfectdan/models_v0.pt` |
 
 Frontend: `VITE_BACKEND_URL` in `gui/frontend/.env` (see `.env.example`).
 
@@ -93,8 +97,10 @@ For public testing, prefer the GHCR container image flow in
 frontend and Python backend into one image, pushes it to
 `ghcr.io/choysang/rlcard-guandan-gui`, and the server only pulls and runs the
 image. This avoids keeping the source tree, `node_modules`, and build caches
-on the server. Use `GUANDAN_GUI_PUBLIC_PORT` in `deploy/docker-compose.yml`
-to bind an unused host port so existing services are not disturbed.
+on the server. Model weights are not baked into the image; mount them into
+`/data/weights` with `GUANDAN_GUI_WEIGHTS_DIR`. Use
+`GUANDAN_GUI_PUBLIC_PORT` in `deploy/docker-compose.yml` to bind an unused
+host port so existing services are not disturbed.
 
 ## 3. Play · 怎么玩
 
@@ -134,14 +140,29 @@ The seat dropdown lists every baseline from the engine registry
 | 大模型 LLM | `llm` | API key, see [llm_guide.md](llm_guide.md) |
 
 `random` and `base1`..`base8` are pure rule agents and always work out of
-the box. **Options marked ⚙️ load a learned model** and need PyTorch
-(`pip install -e ".[ppo]"`) plus their weights. Weights are **not**
-committed to git (they are large); place them where each baseline expects
-them under `guandan_rlcard/baselines/<name>/` — see the main README's
-Baselines table and the per-baseline source for the exact path
-(`danzero` ships its checkpoint; `perfectdan` weights are on GitHub
-Releases). If an AI cannot load its weights the server returns a clear
+the box. **Options marked ⚙️ load a learned model** and need PyTorch plus
+their weights. Weights are **not** committed to git and should not be copied
+into the Docker image.
+
+Default GUI weight layout:
+
+```text
+/data/weights/
+├── dmc/model.tar
+├── danzero_plus/model.tar
+└── perfectdan/models_v0.pt
+```
+
+For local development, set `GUANDAN_MODEL_DIR` to a folder with the same
+layout or set the per-agent variables in the table above. `danzero` ships
+`q_network.ckpt` in the Python package; DMC, DanZero+ and PerfectDan require
+external files. If an AI cannot load its weights the server returns a clear
 error and you can pick another seat type.
+
+When selecting **大模型 LLM** in the create-room form, fill in the model name,
+Base URL and API Key. The API Key is sent only to the backend for that room and
+is excluded from GUI logs and debug room config. The Web GUI blocks LLM room
+creation from public HTTP origins; use an HTTPS domain before entering keys.
 
 ## 5. How it works · 实现说明
 
@@ -189,6 +210,7 @@ error and you can pick another seat type.
   `VITE_BACKEND_URL=http://<host-LAN-ip>:5000`, or open the Vite page using
   the host LAN IP instead of `localhost`.
 * **"该 AI 需要下载模型权重".** The chosen AI needs weights/torch; install
-  `".[ppo]"` and place the weights, or pick a rule AI.
+  `".[ppo,llm]"` and place the weights, or pick a rule AI. Check
+  `/api/agents/status` on the running server to confirm mounted weight paths.
 * **Blank page in production mode.** Run `npm run build` in
   `gui/frontend` first so `dist/` exists for the backend to serve.

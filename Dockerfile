@@ -12,18 +12,20 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     GUANDAN_GUI_PORT=5000 \
     GUANDAN_GUI_LOG_DIR=/data/logs/gui \
+    GUANDAN_MODEL_DIR=/data/weights \
     GUANDAN_GUI_OPEN_BROWSER=false
 
 WORKDIR /app
 RUN useradd --create-home --shell /usr/sbin/nologin guandan \
-    && mkdir -p /data/logs/gui \
+    && mkdir -p /data/logs/gui /data/weights \
     && chown -R guandan:guandan /data
 COPY pyproject.toml README.md LICENSE ./
 COPY guandan_rlcard ./guandan_rlcard
 COPY gui/backend ./gui/backend
 COPY gui/frontend/package.json ./gui/frontend/package.json
 COPY --from=frontend /app/gui/frontend/dist ./gui/frontend/dist
-RUN pip install --no-cache-dir -e . \
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch \
+    && pip install --no-cache-dir -e ".[llm]" \
     && pip install --no-cache-dir -r gui/backend/requirements.txt
 
 VOLUME ["/data"]

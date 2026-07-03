@@ -52,6 +52,15 @@ def test_healthz_reports_service_ready():
     }
 
 
+def test_agent_status_endpoint_reports_runtime_metadata():
+    response = server.app.test_client().get('/api/agents/status')
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert 'dmc' in payload['status']
+    assert payload['status']['llm']['runtime_config_required'] is True
+
+
 def create_started_room(human_ids=(0, 1, 2, 3), debug_enabled=False):
     clients = [make_client()]
     config = {
@@ -272,10 +281,21 @@ def test_room_created_log_uses_anonymous_whitelisted_config(isolated_server):
             'human_player_ids': [0],
             'agentTypes': {'1': 'random', '2': 'random', '3': 'random'},
             'debug_enabled': False,
+            'llmConfig': {
+                'apiKey': 'sk-secret',
+                'baseUrl': 'https://api.example.com/v1',
+                'model': 'model-a',
+            },
             'nickname': 'alice@example.com',
             'token': 'secret-token',
         },
     })
+
+    created_payload = find_event(client, 'room_created')
+    room = server.rooms[created_payload['roomId']]
+    assert 'sk-secret' not in json.dumps(room['config'], ensure_ascii=False)
+    assert 'sk-secret' not in json.dumps(
+        room['game'].player_config, ensure_ascii=False)
 
     events = read_log_events(isolated_server)
     created = next(event for event in events
@@ -291,6 +311,7 @@ def test_room_created_log_uses_anonymous_whitelisted_config(isolated_server):
     serialized = json.dumps(created, ensure_ascii=False)
     assert 'alice@example.com' not in serialized
     assert 'secret-token' not in serialized
+    assert 'sk-secret' not in serialized
 
 
 def test_state_emission_records_broadcast_timing():

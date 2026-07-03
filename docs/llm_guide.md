@@ -1,8 +1,13 @@
 # Running LLM agents · LLM 智能体使用指南
 
 The LLM baseline asks any OpenAI-compatible chat model to pick a legal
-action index each turn. **No API key is stored in this repository** -
-you provide your own through environment variables.
+action index each turn. **No API key is stored in this repository**.
+In the Web GUI, choose **大模型 LLM** and fill the model/Base URL/API Key
+fields when creating the room. In scripts or CLI examples, provide them
+through environment variables.
+
+Only enter an API key on an HTTPS GUI origin. Public HTTP pages are blocked
+from creating LLM rooms because the key would travel in clear text.
 
 ## 1. Where to put your API key · 在哪里配置 API key
 
@@ -11,7 +16,7 @@ Set three environment variables before running:
 | variable | meaning | example |
 |---|---|---|
 | `GUANDAN_LLM_API_KEY` | your API key (**required**) | `sk-...` |
-| `GUANDAN_LLM_BASE_URL` | endpoint of an OpenAI-compatible service (optional; defaults to the official OpenAI API) | `https://api.deepseek.com/` |
+| `GUANDAN_LLM_BASE_URL` | endpoint of an OpenAI-compatible service (optional in scripts; required by the Web GUI) | `https://api.deepseek.com/` |
 | `GUANDAN_LLM_MODEL` | model name (**required**) | `deepseek-chat` |
 
 Linux / macOS:

@@ -12,8 +12,13 @@ services:
       GUANDAN_GUI_AI_DELAY: "${GUANDAN_GUI_AI_DELAY:-0.8}"
       GUANDAN_GUI_AI_SLOW_DELAY: "${GUANDAN_GUI_AI_SLOW_DELAY:-1.6}"
       GUANDAN_GUI_OPEN_BROWSER: "false"
+      GUANDAN_MODEL_DIR: "/data/weights"
+      GUANDAN_DMC_MODEL_TAR: "${GUANDAN_DMC_MODEL_TAR:-/data/weights/dmc/model.tar}"
+      GUANDAN_DANZERO_PLUS_MODEL_TAR: "${GUANDAN_DANZERO_PLUS_MODEL_TAR:-/data/weights/danzero_plus/model.tar}"
+      GUANDAN_PERFECTDAN_MODEL: "${GUANDAN_PERFECTDAN_MODEL:-/data/weights/perfectdan/models_v0.pt}"
     volumes:
       - guandan-gui-data:/data
+      - "${GUANDAN_GUI_WEIGHTS_DIR:-./weights}:/data/weights:ro"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/healthz', timeout=3).read()"]
       interval: 30s

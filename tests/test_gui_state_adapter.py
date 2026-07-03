@@ -64,6 +64,11 @@ def test_debug_state_sanitizes_room_config():
             'human_player_ids': [0],
             'agentTypes': {'1': 'random'},
             'debug_enabled': True,
+            'llmConfig': {
+                'apiKey': 'sk-secret',
+                'baseUrl': 'https://api.example.com/v1',
+                'model': 'model-a',
+            },
             'nickname': 'alice@example.com',
             'token': 'secret',
         },
@@ -74,3 +79,4 @@ def test_debug_state_sanitizes_room_config():
         'agentTypes': {'1': 'random'},
         'debug_enabled': True,
     }
+    assert 'sk-secret' not in str(debug['room_config'])

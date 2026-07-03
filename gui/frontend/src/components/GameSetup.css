@@ -191,6 +191,67 @@
   color: #c0c0e0;
 }
 
+.llm-config-panel {
+  margin-top: 22px;
+  padding: 18px;
+  background: #f7f8fb;
+  border: 1px solid #d9deeb;
+  border-radius: 8px;
+  color: #222;
+}
+
+.llm-config-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+
+.llm-config-header h3 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #222;
+  font-size: 1.05rem;
+}
+
+.llm-config-header p {
+  margin: 0;
+  color: #5b6472;
+  font-size: 0.9rem;
+}
+
+.llm-config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.llm-config-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #384052;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.llm-config-grid input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #c9cfdd;
+  border-radius: 6px;
+  padding: 9px 11px;
+  color: #222;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.llm-api-key-field {
+  grid-column: 1 / -1;
+}
+
 /* 开始游戏部分 */
 .start-section {
   text-align: center;
@@ -250,5 +311,15 @@
   
   .agent-select {
     margin-left: 0;
+  }
+
+  .player-config-new,
+  .llm-config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .llm-config-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 } 

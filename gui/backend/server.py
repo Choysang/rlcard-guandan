@@ -24,7 +24,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
-from .agents import available_agents
+from .agents import agent_runtime_status, available_agents
 from .game_manager import Game
 from .game_logger import GameLogger
 from .state_adapter import sanitize_room_config
@@ -329,6 +329,11 @@ def list_agents():
     return jsonify({'agents': available_agents()})
 
 
+@app.route('/api/agents/status')
+def list_agent_status():
+    return jsonify({'agents': available_agents(), 'status': agent_runtime_status()})
+
+
 # ----------------------------------------------------------------------
 # Socket.IO events
 # ----------------------------------------------------------------------
@@ -379,6 +384,7 @@ def handle_create_room(data):
         seed = int(np.random.SeedSequence().generate_state(1)[0])
         game = Game(config, seed=seed)
         game.init_game()
+        safe_config = sanitize_room_config(config)
 
         room_id = uuid.uuid4().hex[:6].upper()
         creator_seat = human_ids[0]
@@ -386,7 +392,7 @@ def handle_create_room(data):
         session_id = _session_id_from(data)
         resume_token = _new_token('resume')
         host_token = _new_token('host')
-        debug_allowed = bool(config.get('debug_enabled', False))
+        debug_allowed = bool(safe_config.get('debug_enabled', False))
         rooms[room_id] = {
             'game': game,
             'players': {request.sid: creator_seat},
@@ -395,7 +401,7 @@ def handle_create_room(data):
             'session_seats': {session_id: creator_seat},
             'session_participants': {session_id: participant_id},
             'session_resume_tokens': {session_id: resume_token},
-            'config': config,
+            'config': safe_config,
             'host_sid': request.sid,
             'host_session_id': session_id,
             'host_token': host_token,
@@ -415,7 +421,7 @@ def handle_create_room(data):
             'session_id': session_id,
             'player_id': creator_seat,
             'account_id': None,
-            'player_config': sanitize_room_config(config),
+            'player_config': safe_config,
         })
         emit('room_created', {
             'roomId': room_id,
