@@ -1,50 +1,65 @@
-"""Translate an engine state into the JSON contract the frontend uses.
+"""Translate engine state into GUI play/debug state contracts.
 
-The React client expects a flat dict with these keys (see
-``gui/frontend/src``):
-
-    player_hands       {seat: [card_str, ...]}  - hands of the human seats
-    actions            [[type, key, [cards]], ...] - current player's legal
-                       actions (only consumed when it is the client's turn)
-    num_cards_left     [n0, n1, n2, n3]
-    trace              [[seat, action], ...]
-    greaterAction      the combo currently holding the table (or [])
-    greaterPos         seat holding the table (or -1)
-    current_rank       index of the current level card in CARD_RANK
-    rank_list          [team0_rank, team1_rank]
-    play_team          team currently leading
-    turn_count         trick counter (used by the client to reset its
-                       card selection between turns)
-    round_completed    True right after a trick is decided
-    human_player_ids   [...]
-    is_over            whole match finished (a team passed level A)
-    winner_team        0 or 1 when is_over, else absent
-    finished_players   finish order of the last deal when is_over
+``play_state`` is viewer-specific and safe for normal play. ``debug_state``
+is opt-in and intentionally exposes hidden hands for algorithm inspection.
 """
 
+from guandan_rlcard.game.card_utils import cards2str
 
-def build_frontend_state(env, human_player_ids):
-    """Assemble the broadcast state for a room.
 
-    Args:
-        env (GuandanEnv): the running environment.
-        human_player_ids (list[int]): seats controlled by humans.
+def _recent_plays_from_trace(trace):
+    recent = {pid: None for pid in range(4)}
+    for pid, action in reversed(trace or []):
+        if recent[pid] is None:
+            recent[pid] = action
+    return recent
 
-    Returns:
-        dict: the JSON-serialisable state described in the module docstring.
-    """
+
+def _result_fields(env):
+    game = env.game
+    if not env.is_over():
+        return {}
+    result = list(getattr(game.round, 'result', []))
+    winner_team = game.winner_team
+    if winner_team is None or winner_team < 0:
+        winner_team = result[0] % 2 if result and result[0] >= 0 else 0
+    return {
+        'winner_team': winner_team,
+        'finished_players': [p for p in result if p >= 0],
+    }
+
+
+def _hand_for(env, player_id):
+    return cards2str(env.game.players[player_id].current_hand)
+
+
+def build_play_state(env, human_player_ids, viewer_player_id=None,
+                     timings=None):
+    """Build the viewer-specific state safe for normal play."""
     game = env.game
     current_player = env.get_player_id()
     current_state = env.get_state(current_player)
+    human_ids = list(human_player_ids)
+
+    player_hands = {}
+    if viewer_player_id in human_ids:
+        player_hands[viewer_player_id] = _hand_for(env, viewer_player_id)
+
+    actions = []
+    if viewer_player_id == current_player and viewer_player_id in human_ids:
+        actions = current_state.get('actions', [])
+
+    trace = current_state.get('trace', [])
+    recent_plays = current_state.get('recent_plays') or \
+        _recent_plays_from_trace(trace)
 
     state = {
-        'player_hands': {
-            seat: env.get_state(seat).get('current_hand', [])
-            for seat in human_player_ids
-        },
-        'actions': current_state.get('actions', []),
+        'player_hands': player_hands,
+        'actions': actions,
         'num_cards_left': current_state.get('num_cards_left', []),
-        'trace': current_state.get('trace', []),
+        'trace_length': len(trace),
+        'recent_plays': recent_plays,
+        'last_actions': current_state.get('last_actions', {}),
         'greaterAction': current_state.get('greaterAction', []),
         'greaterPos': current_state.get('greaterPos', -1),
         'rank_list': current_state.get('rank_list', [0, 0]),
@@ -52,17 +67,55 @@ def build_frontend_state(env, human_player_ids):
         'current_rank': getattr(game, 'cur_rank', 0),
         'turn_count': current_state.get('global_turn_count', 0),
         'round_completed': current_state.get('round_completed', False),
-        'human_player_ids': list(human_player_ids),
+        'human_player_ids': human_ids,
+        'viewer_player_id': viewer_player_id,
+        'current_player': current_player,
         'is_over': env.is_over(),
+        'timings': dict(timings or {}),
+    }
+    state.update(_result_fields(env))
+    return state
+
+
+def build_debug_state(env, human_player_ids, seed=None, room_config=None,
+                      timings=None):
+    """Build opt-in debugging state. This intentionally exposes all hands."""
+    current_player = env.get_player_id()
+    current_state = env.get_state(current_player)
+    all_hands = {
+        pid: _hand_for(env, pid)
+        for pid in range(env.num_players)
+    }
+    legal_actions_by_player = {
+        pid: env.get_state(pid).get('actions', [])
+        for pid in range(env.num_players)
     }
 
-    if state['is_over']:
-        result = list(getattr(game.round, 'result', []))
-        winner_team = game.winner_team
-        if winner_team is None or winner_team < 0:
-            # Fall back to the finish order of the last deal.
-            winner_team = result[0] % 2 if result and result[0] >= 0 else 0
-        state['winner_team'] = winner_team
-        state['finished_players'] = [p for p in result if p >= 0]
+    snapshot_keys = (
+        'greaterAction', 'greaterPos', 'rank_list', 'play_team',
+        'num_cards_left', 'recent_plays', 'last_actions', 'bomb_history',
+        'finished_players', 'round_completed', 'global_turn_count',
+    )
+    snapshot = {key: current_state.get(key) for key in snapshot_keys}
 
-    return state
+    return {
+        'seed': seed,
+        'room_config': dict(room_config or {}),
+        'human_player_ids': list(human_player_ids),
+        'current_player': current_player,
+        'all_player_hands': all_hands,
+        'other_player_hands': all_hands,
+        'legal_actions_by_player': legal_actions_by_player,
+        'trace': current_state.get('trace', []),
+        'recent_plays': current_state.get('recent_plays', {}),
+        'last_actions': current_state.get('last_actions', {}),
+        'bomb_history': current_state.get('bomb_history', []),
+        'timings': dict(timings or {}),
+        'state_snapshot': snapshot,
+    }
+
+
+def build_frontend_state(env, human_player_ids):
+    """Compatibility wrapper for older callers."""
+    viewer = human_player_ids[0] if human_player_ids else None
+    return build_play_state(env, human_player_ids, viewer)
