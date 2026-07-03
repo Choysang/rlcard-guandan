@@ -1,34 +1,40 @@
-/* 主游戏区域 */
-.game-board {
+.game-board-shell {
   width: 100%;
-  flex: 1;
   min-height: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 10px 14px;
-  box-sizing: border-box;
+  flex: 1;
   display: flex;
-  flex-direction: column;
+  background: #123528;
+  overflow: hidden;
+}
+
+.game-board {
   position: relative;
-  overflow-x: hidden;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 92px minmax(150px, 1fr) 174px;
+  grid-template-columns: 150px minmax(420px, 1fr) 150px;
+  grid-template-areas:
+    ". top ."
+    "left center right"
+    "bottom bottom bottom";
+  gap: 10px;
+  padding: 10px 14px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    #123528;
+  background-size: 32px 32px;
 }
 
-.game-board::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-/* 加载状态 */
 .game-board.loading {
+  display: flex;
   justify-content: center;
   align-items: center;
+  color: #fff;
 }
 
 .loading-spinner {
@@ -51,249 +57,150 @@
   100% { transform: rotate(360deg); }
 }
 
-/* 四人游戏布局 */
-.game-layout {
-  display: grid;
-  grid-template-areas:
-    "top-player"
-    "middle-area"
-    "bottom-player";
-  /* content-sized top/bottom so the hand fan is never clipped; the middle
-     table absorbs the remaining height */
-  grid-template-rows: auto minmax(90px, 1fr) auto;
-  gap: 6px;
-  flex: 1;
-  position: relative;
-  z-index: 1;
+.game-board .game-status {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  right: 250px;
+  z-index: 20;
+  margin-bottom: 0;
 }
 
-/* 玩家区域通用样式 */
-.player-area {
+.board-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 14px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  gap: 6px;
+  z-index: 21;
+}
+
+.speed-segment {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.speed-segment button,
+.debug-toggle {
+  min-height: 30px;
+  border: 0;
+  padding: 0 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.38);
+  cursor: pointer;
+}
+
+.speed-segment button + button {
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.speed-segment button.active,
+.debug-toggle.active {
+  background: #1f7a5c;
+}
+
+.top-player-zone {
+  grid-area: top;
+  justify-self: center;
+  align-self: end;
+}
+
+.left-player-zone {
+  grid-area: left;
+  align-self: center;
+  justify-self: start;
+}
+
+.right-player-zone {
+  grid-area: right;
+  align-self: center;
+  justify-self: end;
+}
+
+.bottom-player-zone {
+  grid-area: bottom;
   position: relative;
-}
-
-/* 顶部玩家 */
-.top-player {
-  grid-area: top-player;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-}
-
-/* 中间区域 */
-.middle-area {
-  grid-area: middle-area;
+  min-width: 0;
   display: grid;
-  grid-template-areas: "left-player center-table right-player";
-  grid-template-columns: 124px 1fr 124px;
-  gap: 12px;
-  align-items: center;
-}
-
-.left-player {
-  grid-area: left-player;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-end;
+  grid-template-rows: auto auto minmax(92px, 1fr);
+  align-items: end;
+  padding: 8px 14px 4px;
+  border-radius: 12px 12px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(6, 20, 18, 0.5);
 }
 
 .center-table {
-  grid-area: center-table;
+  grid-area: center;
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  min-height: 100px;
-  position: relative;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
-.right-player {
-  grid-area: right-player;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-}
-
-/* 底部玩家 */
-.bottom-player {
-  grid-area: bottom-player;
-  flex-direction: column;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px 20px 0 0;
-  padding: 6px 12px 4px 12px;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-/* 玩家信息卡片 */
-.player-info-card {
+.bottom-player-meta {
+  position: absolute;
+  left: 14px;
+  top: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 5px 10px;
-  border-radius: 15px;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  min-width: 110px;
+  color: #fff;
+  z-index: 12;
 }
 
-.player-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.player-avatar.current {
-  background: linear-gradient(45deg, #ffd700, #ffb347);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.player-details {
-  color: white;
-  font-size: 12px;
-}
-
-.player-name {
-  font-weight: bold;
-  margin-bottom: 2px;
-}
-
-.card-count {
-  opacity: 0.8;
-  font-size: 11px;
-}
-
-.turn-indicator {
-  background: linear-gradient(45deg, #ff4757, #ff6b8a);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: bold;
-  margin-top: 2px;
-  animation: blink 1.5s infinite;
-}
-
-.turn-indicator.your-turn {
-  background: linear-gradient(45deg, #2ed573, #7bed9f);
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.7; }
-}
-
-/* 牌背面样式 - 重叠堆叠，避免占用过多空间 */
-.player-cards {
-  display: flex;
-}
-
-.player-cards.horizontal {
-  flex-direction: row;
-}
-
-.player-cards.horizontal .card-back + .card-back {
-  margin-left: -14px;
-}
-
-.player-cards.vertical {
-  flex-direction: column;
-}
-
-.player-cards.vertical .card-back + .card-back {
-  margin-top: -22px;
-}
-
-.card-back {
-  width: 24px;
+.bottom-avatar {
+  width: 34px;
   height: 34px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.card-back::before {
-  content: "🃏";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #1f7a5c;
   font-size: 13px;
-  opacity: 0.7;
+  font-weight: 800;
 }
 
-.vertical-card {
-  width: 22px;
-  height: 30px;
+.bottom-avatar.active-turn {
+  box-shadow: 0 0 0 3px #ffd166, 0 0 14px rgba(255, 209, 102, 0.7);
 }
 
-/* 当前玩家区域 - 头像浮在左上角，不单独占一行 */
-.current-player-info {
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  z-index: 10;
+.bottom-player-name {
+  font-size: 13px;
+  font-weight: 800;
 }
 
-.current-player-cards {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  min-height: 96px;
-  padding: 0;
-  position: relative;
+.bottom-player-detail {
+  font-size: 11px;
+  opacity: 0.78;
 }
 
 .action-area {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2px;
+  min-height: 42px;
   width: 100%;
 }
 
-.current-player-hand-and-actions {
+.current-player-cards {
+  width: 100%;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+  justify-content: center;
+  align-items: flex-end;
 }
 
-/* 游戏结束模态框 */
 .game-over-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -302,55 +209,35 @@
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  padding: 40px;
+  max-width: 420px;
+  width: min(90vw, 420px);
+  padding: 28px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
-  width: 90%;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  background: #123528;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
 }
 
 .modal-content h2 {
-  margin-bottom: 20px;
-  font-size: 2rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.modal-content p {
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-}
-
-.winner-info {
-  margin-bottom: 20px;
+  margin: 0 0 18px;
 }
 
 .winner-team {
-  font-size: 1.4rem !important;
-  font-weight: bold;
-  margin-bottom: 8px !important;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .team-details {
-  font-size: 1rem !important;
-  opacity: 0.9;
+  opacity: 0.82;
 }
 
 .finish-order {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-
-.finish-order > p {
-  font-size: 0.9rem !important;
-  margin-bottom: 12px !important;
-  opacity: 0.8;
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .player-ranks {
@@ -361,116 +248,45 @@
 }
 
 .rank-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.rank-badge.rank-1 {
-  background: linear-gradient(45deg, #ffd700, #ffb347);
-  color: #333;
-  font-weight: bold;
-}
+@media (max-width: 900px) and (orientation: landscape) {
+  .game-board {
+    grid-template-rows: 60px minmax(98px, 1fr) 128px;
+    grid-template-columns: 104px minmax(280px, 1fr) 104px;
+    gap: 6px;
+    padding: 6px 8px;
+  }
 
-.rank-badge.rank-2 {
-  background: linear-gradient(45deg, #c0c0c0, #e8e8e8);
-  color: #333;
-}
+  .game-board .game-status {
+    display: none;
+  }
 
-.modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
+  .board-toolbar {
+    top: 6px;
+    right: 8px;
+  }
 
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 16px;
-}
+  .speed-segment button,
+  .debug-toggle {
+    min-height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
 
-.btn-primary {
-  background: linear-gradient(45deg, #2ed573, #7bed9f);
-  color: white;
-  box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
-}
+  .bottom-player-zone {
+    grid-template-rows: auto minmax(82px, 1fr);
+    padding: 4px 8px 2px;
+  }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(46, 213, 115, 0.4);
-}
+  .bottom-player-meta {
+    display: none;
+  }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .game-layout {
-    grid-template-rows: 100px 1fr 240px;
-  }
-  
-  .bottom-player {
-    min-height: 180px;
-    padding: 15px 10px;
-  }
-  
-  .current-player-cards {
-    min-height: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-  .game-layout {
-    grid-template-rows: 80px 1fr 220px;
-    padding: 10px;
-    gap: 15px;
-  }
-  
-  .middle-area {
-    grid-template-columns: 120px 1fr 120px;
-    gap: 15px;
-  }
-  
-  .bottom-player {
-    min-height: 160px;
-    padding: 12px 8px;
-    gap: 12px;
-  }
-  
-  .current-player-cards {
-    min-height: 100px;
-  }
-}
-
-@media (max-width: 480px) {
-  .game-layout {
-    grid-template-rows: 60px 1fr 180px;
-    padding: 5px;
-    gap: 10px;
-  }
-  
-  .middle-area {
-    grid-template-columns: 100px 1fr 100px;
-    gap: 10px;
-  }
-  
-  .bottom-player {
-    min-height: 140px;
-    padding: 10px 5px;
-    gap: 8px;
-  }
-  
-  .current-player-cards {
-    min-height: 80px;
-  }
-  
   .action-area {
-    margin-top: 5px;
+    min-height: 34px;
   }
-} 
+}

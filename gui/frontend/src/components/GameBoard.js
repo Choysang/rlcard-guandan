@@ -1,22 +1,35 @@
 import { useMemo, useRef, useState } from 'react';
 import ActionPanel from './ActionPanel';
+import DebugPanel from './DebugPanel';
 import './GameBoard.css';
 import GameStatus from './GameStatus';
 import HandCards from './HandCards';
+import LandscapeGuard from './LandscapeGuard';
 import PlayArea from './PlayArea';
+import PlayerSeat from './PlayerSeat';
 
 const sortedKey = (cards) => [...cards].sort().join(',');
 
-const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerIds, thisPlayerId }) => {
+const GameBoard = ({
+  gameState,
+  debugState,
+  currentPlayer,
+  onAction,
+  onRestart,
+  humanPlayerIds,
+  thisPlayerId,
+  roomId,
+  participantId,
+  onSetAiSpeed = () => {},
+  onSetDebugMode = () => {},
+}) => {
   const [selectedIndices, setSelectedIndices] = useState([]);
-  // Hint cursor is only read inside the click handler, so a ref avoids
-  // re-rendering the whole board on every hint.
+  const [debugOpen, setDebugOpen] = useState(Boolean(debugState));
+  const [aiSpeed, setAiSpeed] = useState('normal');
   const hintIndexRef = useRef(0);
 
-  // Reset the selection whenever the turn changes (new player or new trick).
-  // Done with a render-time prev-key comparison (React's recommended pattern)
-  // rather than an effect, so the selection never lags a turn behind.
-  const turnKey = `${currentPlayer}:${gameState?.turn_count}`;
+  const activePlayer = currentPlayer ?? gameState?.current_player;
+  const turnKey = `${activePlayer}:${gameState?.turn_count}`;
   const [prevTurnKey, setPrevTurnKey] = useState(turnKey);
   if (turnKey !== prevTurnKey) {
     setPrevTurnKey(turnKey);
@@ -24,7 +37,7 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
     hintIndexRef.current = 0;
   }
 
-  const isPlayerTurn = currentPlayer === thisPlayerId;
+  const isPlayerTurn = activePlayer === thisPlayerId;
 
   const playerHand = useMemo(() => {
     if (thisPlayerId !== null && gameState?.player_hands) {
@@ -38,8 +51,8 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
     [gameState, isPlayerTurn],
   );
 
-  // The action matching the current selection is derived, not stored, so
-  // there is no effect chain feeding render state.
+  const latestActions = gameState?.recent_plays || {};
+
   const matchedAction = useMemo(() => {
     if (selectedIndices.length === 0 || legalActions.length === 0) return null;
     const selectedKey = sortedKey(selectedIndices.map((i) => playerHand[i]));
@@ -48,13 +61,6 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
         && sortedKey(a[2]) === selectedKey,
     ) || null;
   }, [selectedIndices, playerHand, legalActions]);
-
-  const handleCardSelect = (cardIndex) => {
-    if (!isPlayerTurn) return;
-    setSelectedIndices((prev) => (prev.includes(cardIndex)
-      ? prev.filter((index) => index !== cardIndex)
-      : [...prev, cardIndex].sort((a, b) => a - b)));
-  };
 
   const handleActionSelect = (action) => {
     if (!action || !isPlayerTurn) return;
@@ -77,24 +83,39 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
 
     const hintAction = nonPassActions[hintIndexRef.current % nonPassActions.length];
     hintIndexRef.current += 1;
+    selectActionCards(hintAction);
+  };
 
+  const selectActionCards = (action) => {
+    if (!action || action[0] === 'PASS') return;
     const indicesToSelect = [];
-    const usedIndices = new Set();
-    for (const cardToFind of hintAction[2]) {
-      for (let i = 0; i < playerHand.length; i += 1) {
-        if (!usedIndices.has(i) && playerHand[i] === cardToFind) {
-          indicesToSelect.push(i);
-          usedIndices.add(i);
-          break;
-        }
+    const used = new Set();
+    for (const card of action[2] || []) {
+      const index = playerHand.findIndex((handCard, i) => (
+        handCard === card && !used.has(i)
+      ));
+      if (index >= 0) {
+        indicesToSelect.push(index);
+        used.add(index);
       }
     }
     setSelectedIndices(indicesToSelect.sort((a, b) => a - b));
   };
 
-  const clearSelection = () => {
-    setSelectedIndices([]);
-    hintIndexRef.current = 0;
+  const handleDebugActionSelect = (action) => {
+    if (!isPlayerTurn) return;
+    selectActionCards(action);
+  };
+
+  const handleSpeedChange = (speed) => {
+    setAiSpeed(speed);
+    onSetAiSpeed(speed);
+  };
+
+  const handleDebugToggle = () => {
+    const next = !debugOpen;
+    setDebugOpen(next);
+    onSetDebugMode(next);
   };
 
   const getPlayerName = (playerId) => {
@@ -106,6 +127,11 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
   };
 
   const getPlayerCardCount = (playerId) => gameState?.num_cards_left?.[playerId] ?? 0;
+  const isHumanSeat = (playerId) => Array.isArray(humanPlayerIds)
+    && humanPlayerIds.includes(playerId);
+  const debugHandFor = (playerId) => (
+    debugOpen ? debugState?.all_player_hands?.[playerId] : null
+  );
 
   if (!gameState) {
     return (
@@ -118,39 +144,130 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
     );
   }
 
+  const baseSeat = thisPlayerId ?? 0;
   const playerPositions = {
-    bottom: thisPlayerId,
-    right: (thisPlayerId + 1) % 4,
-    top: (thisPlayerId + 2) % 4,
-    left: (thisPlayerId + 3) % 4,
+    bottom: baseSeat,
+    right: (baseSeat + 1) % 4,
+    top: (baseSeat + 2) % 4,
+    left: (baseSeat + 3) % 4,
   };
+  const bottomPlayer = playerPositions.bottom;
+  const winnerIsMyTeam = thisPlayerId !== null
+    && gameState.winner_team === thisPlayerId % 2;
 
-  const renderPlayer = (position) => {
-    const playerId = playerPositions[position];
-    if (playerId === null) return null;
-    const isCurrentActivePlayer = currentPlayer === playerId;
+  return (
+    <LandscapeGuard>
+      <div className={`game-board-shell ${debugOpen ? 'debug-open' : ''}`}>
+        <div className="game-board">
+          <GameStatus
+            gameState={gameState}
+            currentPlayer={activePlayer}
+            onRestart={onRestart}
+          />
 
-    if (position === 'bottom') {
-      return (
-        <div className="player-area bottom-player">
-          <div className="current-player-info">
-            <div className="player-info-card">
-              <div className="player-avatar current"><span>😊</span></div>
-              <div className="player-details">
-                <div className="player-name">{getPlayerName(playerId)}</div>
-                <div className="card-count">手牌: {playerHand.length} 张</div>
-                {isCurrentActivePlayer && <div className="turn-indicator your-turn">你的回合</div>}
-              </div>
+          <div className="board-toolbar">
+            <div className="speed-segment" aria-label="AI 速度">
+              {['fast', 'normal', 'slow'].map((speed) => (
+                <button
+                  key={speed}
+                  type="button"
+                  className={aiSpeed === speed ? 'active' : ''}
+                  onClick={() => handleSpeedChange(speed)}
+                >
+                  {speed === 'fast' ? '极速' : speed === 'slow' ? '慢速' : '正常'}
+                </button>
+              ))}
             </div>
+            <button
+              type="button"
+              className={`debug-toggle ${debugOpen ? 'active' : ''}`}
+              onClick={handleDebugToggle}
+            >
+              调测
+            </button>
           </div>
 
-          <div className="current-player-hand-and-actions">
+          <div className="top-player-zone">
+            <PlayerSeat
+              position="top"
+              playerId={playerPositions.top}
+              playerName={getPlayerName(playerPositions.top)}
+              cardCount={getPlayerCardCount(playerPositions.top)}
+              isActive={activePlayer === playerPositions.top}
+              isHuman={isHumanSeat(playerPositions.top)}
+              latestAction={latestActions[playerPositions.top]}
+              debugHand={debugHandFor(playerPositions.top)}
+            />
+          </div>
+
+          <div className="left-player-zone">
+            <PlayerSeat
+              position="left"
+              playerId={playerPositions.left}
+              playerName={getPlayerName(playerPositions.left)}
+              cardCount={getPlayerCardCount(playerPositions.left)}
+              isActive={activePlayer === playerPositions.left}
+              isHuman={isHumanSeat(playerPositions.left)}
+              latestAction={latestActions[playerPositions.left]}
+              debugHand={debugHandFor(playerPositions.left)}
+            />
+          </div>
+
+          <div className="center-table">
+            <PlayArea
+              gameState={gameState}
+              currentPlayer={activePlayer}
+              humanPlayerIds={humanPlayerIds}
+              thisPlayerId={thisPlayerId}
+            />
+          </div>
+
+          <div className="right-player-zone">
+            <PlayerSeat
+              position="right"
+              playerId={playerPositions.right}
+              playerName={getPlayerName(playerPositions.right)}
+              cardCount={getPlayerCardCount(playerPositions.right)}
+              isActive={activePlayer === playerPositions.right}
+              isHuman={isHumanSeat(playerPositions.right)}
+              latestAction={latestActions[playerPositions.right]}
+              debugHand={debugHandFor(playerPositions.right)}
+            />
+          </div>
+
+          <div className="bottom-player-zone">
+            <div className="bottom-player-meta">
+              <div className={`bottom-avatar ${activePlayer === bottomPlayer ? 'active-turn' : ''}`}>
+                你
+              </div>
+              <div>
+                <div className="bottom-player-name">{getPlayerName(bottomPlayer)}</div>
+                <div className="bottom-player-detail">
+                  手牌 {playerHand.length} 张
+                  {roomId && <span> · 房间 {roomId}</span>}
+                  {participantId && <span> · {participantId.slice(0, 18)}</span>}
+                </div>
+              </div>
+            </div>
+
+            <PlayerSeat
+              position="bottom"
+              playerId={bottomPlayer}
+              playerName={getPlayerName(bottomPlayer)}
+              cardCount={playerHand.length}
+              isActive={activePlayer === bottomPlayer}
+              isHuman={isHumanSeat(bottomPlayer)}
+              latestAction={latestActions[bottomPlayer]}
+              debugHand={null}
+              showMeta={false}
+              showCardBacks={false}
+            />
+
             {isPlayerTurn && (
               <div className="action-area">
                 <ActionPanel
                   onActionSelect={handleActionSelect}
                   onPass={handlePass}
-                  onClearSelection={clearSelection}
                   onHint={handleHint}
                   isPlayerTurn={isPlayerTurn}
                   matchedAction={matchedAction}
@@ -163,96 +280,57 @@ const GameBoard = ({ gameState, currentPlayer, onAction, onRestart, humanPlayerI
               <HandCards
                 cards={playerHand}
                 selectedCards={selectedIndices}
-                onCardSelect={handleCardSelect}
+                setSelected={setSelectedIndices}
                 isInteractive={isPlayerTurn}
               />
             </div>
           </div>
-        </div>
-      );
-    }
 
-    const backCount = Math.min(getPlayerCardCount(playerId), position === 'top' ? 13 : 10);
-    return (
-      <div className={`player-area ${position}-player`}>
-        <div className="player-info-card">
-          <div className="player-avatar">
-            <span>{humanPlayerIds.includes(playerId) ? '👤' : '🤖'}</span>
-          </div>
-          <div className="player-details">
-            <div className="player-name">{getPlayerName(playerId)}</div>
-            <div className="card-count">手牌: {getPlayerCardCount(playerId)} 张</div>
-            {isCurrentActivePlayer && <div className="turn-indicator">出牌中...</div>}
-          </div>
-        </div>
-        <div className={`player-cards ${position === 'top' ? 'horizontal' : 'vertical'}`}>
-          {Array.from({ length: backCount }).map((_, i) => (
-            <div key={`back-${playerId}-${i}`} className={`card-back ${position !== 'top' ? 'vertical-card' : ''}`} />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const winnerIsMyTeam = gameState.winner_team === thisPlayerId % 2;
-
-  return (
-    <div className="game-board">
-      <GameStatus gameState={gameState} currentPlayer={currentPlayer} onRestart={onRestart} />
-
-      <div className="game-layout">
-        {renderPlayer('top')}
-        <div className="middle-area">
-          {renderPlayer('left')}
-          <div className="center-table">
-            <PlayArea
-              gameState={gameState}
-              currentPlayer={currentPlayer}
-              humanPlayerIds={humanPlayerIds}
-              thisPlayerId={thisPlayerId}
-            />
-          </div>
-          {renderPlayer('right')}
-        </div>
-        {renderPlayer('bottom')}
-      </div>
-
-      {gameState.is_over && (
-        <div className="game-over-modal">
-          <div className="modal-content">
-            <h2>🎉 游戏结束</h2>
-            <div className="winner-info">
-              <p className="winner-team">
-                {winnerIsMyTeam ? '🏆 你的队伍获胜！' : '😢 对方队伍获胜'}
-              </p>
-              <p className="team-details">
-                获胜队伍: {gameState.winner_team === 0
-                  ? `${getPlayerName(0)} & ${getPlayerName(2)}`
-                  : `${getPlayerName(1)} & ${getPlayerName(3)}`}
-              </p>
-            </div>
-            {gameState.finished_players && (
-              <div className="finish-order">
-                <p>完成顺序:</p>
-                <div className="player-ranks">
-                  {gameState.finished_players.map((playerId, idx) => (
-                    <span key={playerId} className={`rank-badge rank-${idx + 1}`}>
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '4️⃣'}
-                      {getPlayerName(playerId)}
-                    </span>
-                  ))}
+          {gameState.is_over && (
+            <div className="game-over-modal">
+              <div className="modal-content">
+                <h2>游戏结束</h2>
+                <div className="winner-info">
+                  <p className="winner-team">
+                    {winnerIsMyTeam ? '你的队伍获胜' : '对方队伍获胜'}
+                  </p>
+                  <p className="team-details">
+                    获胜队伍: {gameState.winner_team === 0
+                      ? `${getPlayerName(0)} & ${getPlayerName(2)}`
+                      : `${getPlayerName(1)} & ${getPlayerName(3)}`}
+                  </p>
+                </div>
+                {gameState.finished_players && (
+                  <div className="finish-order">
+                    <p>完成顺序:</p>
+                    <div className="player-ranks">
+                      {gameState.finished_players.map((playerId, idx) => (
+                        <span key={playerId} className={`rank-badge rank-${idx + 1}`}>
+                          {idx + 1}. {getPlayerName(playerId)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="modal-actions">
+                  <button type="button" className="btn btn-primary" onClick={onRestart}>
+                    返回大厅
+                  </button>
                 </div>
               </div>
-            )}
-            <div className="modal-actions">
-              <button type="button" className="btn btn-primary" onClick={onRestart}>
-                返回大厅
-              </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {debugOpen && (
+          <DebugPanel
+            debugState={debugState}
+            currentPlayer={activePlayer}
+            onSelectAction={handleDebugActionSelect}
+          />
+        )}
+      </div>
+    </LandscapeGuard>
   );
 };
 

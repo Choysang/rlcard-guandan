@@ -66,6 +66,10 @@
   position: relative;
   height: 96px;
   margin: 0 auto;
+  /* let press-drag select cards instead of scrolling/selecting text */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .hand-cards.empty {
@@ -84,7 +88,8 @@
 .hand-card {
   position: absolute;
   top: 0;
-  transition: top 0.15s ease-out, transform 0.15s ease-out;
+  touch-action: none;
+  transition: top 0.12s ease-out, transform 0.12s ease-out;
 }
 
 .hand-card.interactive {

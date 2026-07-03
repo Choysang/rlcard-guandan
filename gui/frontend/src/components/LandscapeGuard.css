@@ -1,0 +1,41 @@
+.landscape-guard {
+  display: none;
+}
+
+.landscape-content {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .landscape-content {
+    display: none;
+  }
+
+  .landscape-guard {
+    min-height: 100vh;
+    display: grid;
+    place-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    color: #fff;
+    background: #123528;
+  }
+
+  .rotate-device-icon {
+    font-size: 44px;
+    line-height: 1;
+  }
+
+  .rotate-title {
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .rotate-copy {
+    font-size: 14px;
+    opacity: 0.82;
+  }
+}

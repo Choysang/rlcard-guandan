@@ -13,7 +13,9 @@ const GameStatus = ({ gameState, currentPlayer, onRestart }) => {
 
   const rank = gameState.current_rank || 0;
   const rankName = RANK_NAMES[rank] || '?';
-  const progress = Array.isArray(gameState.trace) ? gameState.trace.length : 0;
+  const progress = Number.isFinite(gameState.trace_length)
+    ? gameState.trace_length
+    : Array.isArray(gameState.trace) ? gameState.trace.length : 0;
 
   return (
     <div className={`game-status ${open ? 'open' : ''}`}>

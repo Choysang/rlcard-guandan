@@ -62,21 +62,30 @@
   height: 100px;
 }
 
-/* 大小王中央文字（竖排，适配窄牌面，绝不溢出） */
-.joker-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  writing-mode: vertical-rl;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  line-height: 1;
+/* 大小王图标：角标 + 中央大图标，颜色随牌面（小王黑、大王彩色/红） */
+.joker-corner-icon {
+  display: block;
+  width: 15px;
+  height: 15px;
 }
 
-.card-small .joker-label {
-  font-size: 11px;
+.joker-center-icon {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+}
+
+.card-small .joker-corner-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.card-small .joker-center-icon {
+  width: 22px;
+  height: 22px;
 }
 
 /* 交互状态 */

@@ -10,6 +10,21 @@ const SUIT_MAP = {
   D: { symbol: '♦', color: 'red' },
 };
 
+// Jester-hat icon for the jokers. `fill="currentColor"` makes it follow the
+// card's text colour, so the small joker (card-black) is black and the big
+// joker (card-red) is coloured — no Chinese label needed.
+const JokerIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">
+    <path d="M32 13 L43 47 H21 Z" />
+    <path d="M14 19 L27 47 H4 Z" />
+    <path d="M50 19 L60 47 H37 Z" />
+    <rect x="9" y="45" width="46" height="10" rx="5" />
+    <circle cx="32" cy="9" r="5.5" />
+    <circle cx="11" cy="15" r="4.5" />
+    <circle cx="53" cy="15" r="4.5" />
+  </svg>
+);
+
 const Card = ({ cardString, size = 'normal' }) => {
   if (!cardString || cardString.length < 2) {
     return (
@@ -32,13 +47,14 @@ const Card = ({ cardString, size = 'normal' }) => {
   ].join(' ');
 
   if (isJoker) {
+    // 小王 (SB) -> black icon, 大王 (HR) -> coloured (red) icon.
     const isSmall = rank === 'B';
     return (
       <div className={`${cardClasses} card-joker ${isSmall ? 'card-black' : 'card-red'}`}>
         <div className="card-content">
-          <div className="card-rank">{isSmall ? 'S' : 'B'}</div>
+          <JokerIcon className="joker-corner-icon" />
         </div>
-        <div className="joker-label">{isSmall ? '小王' : '大王'}</div>
+        <JokerIcon className="joker-center-icon" />
       </div>
     );
   }

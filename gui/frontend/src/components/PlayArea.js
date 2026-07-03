@@ -1,6 +1,8 @@
 import Card from './Card';
 import './PlayArea.css';
 
+const RANK_NAMES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
 const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId = null }) => {
   if (!gameState) {
     return (
@@ -13,14 +15,10 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
     );
   }
 
-  // 获取游戏追踪信息
-  const trace = gameState.trace || [];
   const currentRank = gameState.current_rank || 0;
+  const rankName = RANK_NAMES[currentRank] || currentRank;
   const greaterAction = gameState.greaterAction || null;
   const greaterPos = gameState.greaterPos || -1;
-
-  // 获取最近的出牌记录（只显示最后一轮）
-  const lastRoundPlays = trace.slice(-3); // 最近 3 次出牌
 
   // 获取当前最大的牌
   const getCurrentPlay = () => {
@@ -92,7 +90,7 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
           {/* 游戏级别指示器 */}
           <div className="game-level">
             <span className="level-icon">🏆</span>
-            <span className="level-text">等级 {currentRank}</span>
+            <span className="level-text">等级 {rankName}</span>
           </div>
 
           {/* 当前最大的牌面 */}
@@ -126,29 +124,6 @@ const PlayArea = ({ gameState, currentPlayer, humanPlayerIds = [], thisPlayerId 
             <span>{getPlayerName(currentPlayer)}的回合</span>
           </div>
         </div>
-
-        {/* 最近出牌历史（紧凑显示） */}
-        {lastRoundPlays.length > 0 && (
-          <div className="mini-history">
-            <div className="history-title">最近出牌</div>
-            <div className="history-items">
-              {lastRoundPlays.map((playRecord, index) => {
-                const [playerId, action] = playRecord;
-                const isPass = action[0] === 'PASS';
-
-                return (
-                  <div
-                    key={`${trace.length - lastRoundPlays.length + index}-${playerId}`}
-                    className={`mini-history-item ${isPass ? 'pass' : ''}`}
-                  >
-                    <span className="mini-player">{getPlayerName(playerId)}</span>
-                    <span className="mini-action">{formatAction(action)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 游戏状态指示器 */}
