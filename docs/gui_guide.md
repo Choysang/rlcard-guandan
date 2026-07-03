@@ -86,6 +86,16 @@ Backend (all optional):
 
 Frontend: `VITE_BACKEND_URL` in `gui/frontend/.env` (see `.env.example`).
 
+### Container deployment · 容器部署
+
+For public testing, prefer the GHCR container image flow in
+[`deploy/README.md`](../deploy/README.md). GitHub Actions builds the React
+frontend and Python backend into one image, pushes it to
+`ghcr.io/choysang/rlcard-guandan-gui`, and the server only pulls and runs the
+image. This avoids keeping the source tree, `node_modules`, and build caches
+on the server. Use `GUANDAN_GUI_PUBLIC_PORT` in `deploy/docker-compose.yml`
+to bind an unused host port so existing services are not disturbed.
+
 ## 3. Play · 怎么玩
 
 1. **Create a room** (创建房间): on the host, configure each of the four

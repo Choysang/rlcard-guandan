@@ -42,6 +42,16 @@ def event_names(client):
     return [event['name'] for event in client.get_received()]
 
 
+def test_healthz_reports_service_ready():
+    response = server.app.test_client().get('/healthz')
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        'ok': True,
+        'service': 'guandan-gui',
+    }
+
+
 def create_started_room(human_ids=(0, 1, 2, 3), debug_enabled=False):
     clients = [make_client()]
     config = {

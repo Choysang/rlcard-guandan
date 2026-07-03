@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>Guandan table icon</title>
+  <rect width="512" height="512" rx="96" fill="#0f7f5f"/>
+  <circle cx="256" cy="256" r="170" fill="#126c52"/>
+  <path d="M158 157h164c29 0 52 23 52 52v146H210c-29 0-52-23-52-52z" fill="#f8faf7"/>
+  <path d="M197 128h146c29 0 52 23 52 52v146H249c-29 0-52-23-52-52z" fill="#fff8ea"/>
+  <path d="M254 204c19-26 58-12 58 21 0 33-34 54-58 76-24-22-58-43-58-76 0-33 39-47 58-21z" fill="#d92638"/>
+  <path d="M148 367h216" stroke="#fff8ea" stroke-width="24" stroke-linecap="round"/>
+</svg>

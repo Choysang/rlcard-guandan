@@ -292,6 +292,11 @@ def _drive_ai(room_id):
 # HTTP routes (serve the built SPA)
 # ----------------------------------------------------------------------
 
+@app.route('/healthz')
+def healthz():
+    return jsonify({'ok': True, 'service': 'guandan-gui'})
+
+
 @app.route('/')
 def serve_index():
     index = os.path.join(app.static_folder, 'index.html')

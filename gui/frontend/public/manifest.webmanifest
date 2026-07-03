@@ -1,0 +1,19 @@
+{
+  "name": "掼蛋算法调测牌桌",
+  "short_name": "掼蛋调测",
+  "description": "面向掼蛋算法调测和移动端体验收集的实时牌桌。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0f7f5f",
+  "theme_color": "#0f7f5f",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
