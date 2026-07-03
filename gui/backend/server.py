@@ -23,6 +23,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 
 from .agents import available_agents
 from .game_manager import Game
+from .game_logger import GameLogger
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +36,11 @@ FRONTEND_DIST = os.path.normpath(
 PORT = int(os.environ.get('GUANDAN_GUI_PORT', '5000'))
 # Delay between animated AI turns, in seconds.
 AI_TURN_DELAY = float(os.environ.get('GUANDAN_GUI_AI_DELAY', '0.8'))
+AI_SPEED_DELAYS = {
+    'fast': 0.0,
+    'normal': AI_TURN_DELAY,
+    'slow': float(os.environ.get('GUANDAN_GUI_AI_SLOW_DELAY', '1.6')),
+}
 # Socket.IO origins; '*' is convenient on a trusted LAN. Override with a
 # comma-separated allow-list in production.
 CORS_ORIGINS = os.environ.get('GUANDAN_GUI_CORS', '*')
@@ -45,6 +51,7 @@ app = Flask(__name__, static_folder=FRONTEND_DIST)
 CORS(app, origins=_cors_origins)
 socketio = SocketIO(app, cors_allowed_origins=_cors_origins,
                     async_mode='threading')
+game_logger = GameLogger()
 
 # room_id -> {'game': Game, 'players': {sid: seat}, 'config': {...},
 #             'host_sid': sid}
@@ -67,31 +74,99 @@ def get_local_ip():
         return '127.0.0.1'
 
 
-def _broadcast_state(room_id, event='update_state'):
+def _emit_state_to_room(room_id, event='update_state'):
     room = rooms.get(room_id)
     if not room:
         return
     game = room['game']
-    socketio.emit(event, {
-        'state': game.frontend_state(),
-        'current_player': game.current_player(),
-    }, room=room_id)
+    for sid, seat in list(room['players'].items()):
+        payload = game.frontend_payload(viewer_player_id=seat)
+        socketio.emit(event, {
+            'state': payload['play_state'],
+            'debug_state': payload['debug_state'],
+            'current_player': game.current_player(),
+            'viewer_player_id': seat,
+            'room_id': room_id,
+        }, to=sid)
+
+
+def _participant_for(room, player_id):
+    for sid, seat in room['players'].items():
+        if seat == player_id:
+            return room.get('participants', {}).get(sid)
+    return None
+
+
+def _log_last_action(room_id):
+    room = rooms.get(room_id)
+    if not room:
+        return
+    game = room['game']
+    meta = game.last_action_meta
+    if not meta:
+        return
+    player_id = meta['player_id']
+    participant_id = _participant_for(room, player_id) or f'ai_{player_id}'
+    state = game.env.get_state(game.current_player())
+    game_logger.log_action(
+        room_id=room_id,
+        game_id=game.game_id,
+        participant_id=participant_id,
+        player_id=player_id,
+        is_human=meta['is_human'],
+        action=meta['action'],
+        legal_action_count=meta['legal_action_count'],
+        current_rank=getattr(game.env.game, 'cur_rank', 0),
+        num_cards_left=state.get('num_cards_left', []),
+        timings=game.last_timings,
+    )
+
+
+def _log_match_summary(room_id):
+    room = rooms.get(room_id)
+    if not room or room.get('summary_logged'):
+        return
+    game = room['game']
+    if not game.is_over():
+        return
+    room['summary_logged'] = True
+    result = list(getattr(game.env.game.round, 'result', []))
+    game_logger.write_event('match_summary', {
+        'room_id': room_id,
+        'game_id': game.game_id,
+        'winner_team': game.env.game.winner_team,
+        'finished_players': [p for p in result if p >= 0],
+        'account_id': None,
+    })
 
 
 def _drive_ai(room_id):
-    """Animate AI/auto turns one at a time until a human must act or the
-    match ends, broadcasting after each step."""
+    """Drive AI/auto turns according to the room speed mode."""
     room = rooms.get(room_id)
     if not room:
         return
     game = room['game']
+    if game.ai_speed == 'fast':
+        while not game.is_over() and not game.is_waiting_for_human():
+            if room_id not in rooms:  # room may close mid-loop
+                return
+            if not game.step_one_ai():
+                break
+            _log_last_action(room_id)
+        _emit_state_to_room(room_id)
+        _log_match_summary(room_id)
+        return
+
+    delay = AI_SPEED_DELAYS.get(game.ai_speed, AI_TURN_DELAY)
     while not game.is_over() and not game.is_waiting_for_human():
-        socketio.sleep(AI_TURN_DELAY)
+        socketio.sleep(delay)
         if room_id not in rooms:  # room may close mid-loop
             return
         if not game.step_one_ai():
             break
-        _broadcast_state(room_id)
+        _log_last_action(room_id)
+        _emit_state_to_room(room_id)
+    _log_match_summary(room_id)
 
 
 # ----------------------------------------------------------------------
@@ -145,7 +220,15 @@ def handle_disconnect():
     for room_id, room in list(rooms.items()):
         if request.sid in room['players']:
             seat = room['players'].pop(request.sid)
+            participant_id = room.get('participants', {}).pop(request.sid, None)
             leave_room(room_id)
+            game_logger.write_event('player_disconnected', {
+                'room_id': room_id,
+                'game_id': room['game'].game_id,
+                'participant_id': participant_id,
+                'player_id': seat,
+                'account_id': None,
+            })
             emit('player_left', {'playerId': seat, 'sid': request.sid},
                  room=room_id)
             if not room['players']:
@@ -169,16 +252,32 @@ def handle_create_room(data):
 
         room_id = uuid.uuid4().hex[:6].upper()
         creator_seat = human_ids[0]
+        participant_id = game_logger.new_participant_id()
         rooms[room_id] = {
             'game': game,
             'players': {request.sid: creator_seat},
+            'participants': {request.sid: participant_id},
             'config': config,
             'host_sid': request.sid,
+            'summary_logged': False,
         }
         join_room(room_id)
         logger.info('Room %s created by sid %s (seat %s).',
                     room_id, request.sid, creator_seat)
-        emit('room_created', {'roomId': room_id, 'playerId': creator_seat})
+        game_logger.write_event('room_created', {
+            'room_id': room_id,
+            'game_id': game.game_id,
+            'participant_id': participant_id,
+            'player_id': creator_seat,
+            'nickname': config.get('nickname', ''),
+            'account_id': None,
+            'player_config': config,
+        })
+        emit('room_created', {
+            'roomId': room_id,
+            'playerId': creator_seat,
+            'participantId': participant_id,
+        })
         check_and_start_game(room_id)
     except Exception as exc:  # noqa: BLE001 - report to the client
         logger.exception('create_room failed')
@@ -201,9 +300,22 @@ def handle_join_room(data):
         return
 
     join_room(room_id)
+    participant_id = game_logger.new_participant_id()
     room['players'][request.sid] = seat
+    room.setdefault('participants', {})[request.sid] = participant_id
     logger.info('sid %s joined room %s as seat %s.', request.sid, room_id, seat)
-    emit('joined_room', {'roomId': room_id, 'playerId': seat})
+    game_logger.write_event('player_joined', {
+        'room_id': room_id,
+        'game_id': room['game'].game_id,
+        'participant_id': participant_id,
+        'player_id': seat,
+        'account_id': None,
+    })
+    emit('joined_room', {
+        'roomId': room_id,
+        'playerId': seat,
+        'participantId': participant_id,
+    })
     emit('player_joined', {'sid': request.sid, 'playerId': seat}, room=room_id)
     check_and_start_game(room_id)
 
@@ -217,7 +329,13 @@ def check_and_start_game(room_id):
     if len(room['players']) != len(human_ids):
         return
     logger.info('All humans joined room %s; starting.', room_id)
-    _broadcast_state(room_id, event='game_started')
+    game_logger.write_event('game_started', {
+        'room_id': room_id,
+        'game_id': room['game'].game_id,
+        'human_player_ids': human_ids,
+        'account_id': None,
+    })
+    _emit_state_to_room(room_id, event='game_started')
     # If the opening leader is somehow an AI/auto turn, animate it.
     socketio.start_background_task(_drive_ai, room_id)
 
@@ -241,8 +359,50 @@ def handle_player_action(data):
         emit('error', {'message': f'服务器错误: {exc}'})
         return
 
-    _broadcast_state(room_id)
+    _log_last_action(room_id)
+    _emit_state_to_room(room_id)
+    _log_match_summary(room_id)
     socketio.start_background_task(_drive_ai, room_id)
+
+
+@socketio.on('set_ai_speed')
+def handle_set_ai_speed(data):
+    data = data or {}
+    room_id = data.get('roomId')
+    room = rooms.get(room_id)
+    if not room:
+        emit('error', {'message': '游戏房间未找到。'})
+        return
+    try:
+        room['game'].set_ai_speed(data.get('speed'))
+    except ValueError as exc:
+        emit('error', {'message': str(exc)})
+        return
+    game_logger.write_event('ai_speed_changed', {
+        'room_id': room_id,
+        'game_id': room['game'].game_id,
+        'speed': room['game'].ai_speed,
+        'account_id': None,
+    })
+    _emit_state_to_room(room_id)
+
+
+@socketio.on('set_debug_mode')
+def handle_set_debug_mode(data):
+    data = data or {}
+    room_id = data.get('roomId')
+    room = rooms.get(room_id)
+    if not room:
+        emit('error', {'message': '游戏房间未找到。'})
+        return
+    room['game'].set_debug_enabled(bool(data.get('enabled')))
+    game_logger.write_event('debug_mode_changed', {
+        'room_id': room_id,
+        'game_id': room['game'].game_id,
+        'debug_enabled': room['game'].debug_enabled,
+        'account_id': None,
+    })
+    _emit_state_to_room(room_id)
 
 
 def _open_browser():
