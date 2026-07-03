@@ -12,6 +12,7 @@ Push to `main`, `master`, `feat/**`, or run the `GUI Container Image`
 workflow manually. The workflow publishes:
 
 - `ghcr.io/choysang/rlcard-guandan-gui:latest` from the default branch
+- `ghcr.io/choysang/rlcard-guandan-gui:feat-web-gui` from this deployment branch
 - `ghcr.io/choysang/rlcard-guandan-gui:<branch-or-tag>`
 - `ghcr.io/choysang/rlcard-guandan-gui:sha-<commit>`
 
@@ -36,7 +37,8 @@ curl -fsS http://127.0.0.1:5080/healthz
 ```
 
 Use a port that is not already occupied. The container listens on port `5000`
-internally; `GUANDAN_GUI_PUBLIC_PORT` controls the host port.
+internally; `GUANDAN_GUI_PUBLIC_PORT` controls the host port. Override
+`GUANDAN_GUI_IMAGE` to pin a specific tag or digest.
 
 ## Update
 
