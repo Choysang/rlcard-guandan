@@ -1,10 +1,11 @@
 import Card from './Card';
 import './PlayerSeat.css';
+import { actionCards } from '../utils/actionCards';
 
 const actionLabel = (action) => {
   if (!action) return '';
   if (action[0] === 'PASS') return '不出';
-  if (action[0] === 'Bomb') return `${action[2]?.length || 0}张炸弹`;
+  if (action[0] === 'Bomb') return `${actionCards(action).length}张炸弹`;
   const labels = {
     Single: '单牌',
     Pair: '对子',
@@ -23,9 +24,10 @@ const renderActionCards = (action) => {
   if (action[0] === 'PASS') {
     return <span className="seat-pass-chip">不出</span>;
   }
+  const cards = actionCards(action);
   return (
     <div className="seat-play-cards">
-      {(action[2] || []).map((card, index) => (
+      {cards.map((card, index) => (
         <Card key={`${card}-${index}`} cardString={card} size="small" />
       ))}
     </div>

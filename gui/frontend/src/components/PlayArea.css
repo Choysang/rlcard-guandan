@@ -314,7 +314,7 @@
   }
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
   .play-area {
     justify-content: center;
   }

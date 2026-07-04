@@ -145,7 +145,7 @@
   overflow: auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) and (orientation: landscape), (max-width: 900px) {
   .debug-panel {
     display: none;
   }

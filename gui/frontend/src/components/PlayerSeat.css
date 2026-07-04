@@ -140,16 +140,17 @@
 
 .seat-debug-hand {
   display: flex;
-  max-width: 240px;
-  overflow: hidden;
+  max-width: min(420px, 56vw);
+  overflow: visible;
   margin-top: 6px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
 }
 
 .seat-debug-hand .card + .card {
-  margin-left: -22px;
+  margin-left: -24px;
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
   .player-seat {
     min-width: 0;
     min-height: 0;
@@ -248,6 +249,33 @@
 
   .player-seat-bottom .seat-latest-play {
     top: -38px;
+  }
+
+  .seat-debug-hand {
+    position: absolute;
+    max-width: none;
+    margin-top: 0;
+    z-index: 12;
+  }
+
+  .seat-debug-hand .card + .card {
+    margin-left: -23px;
+  }
+
+  .player-seat-top .seat-debug-hand {
+    left: 50%;
+    top: 42px;
+    transform: translateX(-50%);
+  }
+
+  .player-seat-left .seat-debug-hand {
+    left: calc(100% + 6px);
+    top: 4px;
+  }
+
+  .player-seat-right .seat-debug-hand {
+    right: calc(100% + 6px);
+    top: 4px;
   }
 }
 

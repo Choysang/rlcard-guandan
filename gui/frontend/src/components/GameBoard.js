@@ -8,6 +8,8 @@ import HandCards from './HandCards';
 import LandscapeGuard from './LandscapeGuard';
 import PlayArea from './PlayArea';
 import PlayerSeat from './PlayerSeat';
+import { actionCards } from '../utils/actionCards';
+import { debugSeatHandFor } from '../utils/debugSeatHand';
 
 const sortedKey = (cards) => [...cards].sort().join(',');
 
@@ -83,7 +85,7 @@ const GameBoard = ({
   const handleHint = () => {
     if (!isPlayerTurn || !playerHand.length || !legalActions.length) return;
     const nonPassActions = legalActions.filter(
-      (a) => a[0] !== 'PASS' && a[2] && a[2].length > 0,
+      (a) => a[0] !== 'PASS' && actionCards(a).length > 0,
     );
     if (nonPassActions.length === 0) return;
 
@@ -96,7 +98,7 @@ const GameBoard = ({
     if (!action || action[0] === 'PASS') return;
     const indicesToSelect = [];
     const used = new Set();
-    for (const card of action[2] || []) {
+    for (const card of actionCards(action)) {
       const index = playerHand.findIndex((handCard, i) => (
         handCard === card && !used.has(i)
       ));
@@ -134,7 +136,6 @@ const GameBoard = ({
   const getPlayerCardCount = (playerId) => gameState?.num_cards_left?.[playerId] ?? 0;
   const isHumanSeat = (playerId) => Array.isArray(humanPlayerIds)
     && humanPlayerIds.includes(playerId);
-  const debugHandFor = () => null;
 
   if (!gameState) {
     return (
@@ -155,6 +156,12 @@ const GameBoard = ({
     left: (baseSeat + 3) % 4,
   };
   const bottomPlayer = playerPositions.bottom;
+  const debugHandFor = (playerId) => debugSeatHandFor({
+    debugOpen,
+    debugState,
+    playerId,
+    bottomPlayerId: bottomPlayer,
+  });
   const winnerIsMyTeam = thisPlayerId !== null
     && gameState.winner_team === thisPlayerId % 2;
 

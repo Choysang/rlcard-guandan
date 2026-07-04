@@ -1,5 +1,6 @@
 import Card from './Card';
 import './DebugPanel.css';
+import { actionCards } from '../utils/actionCards';
 
 const DebugPanel = ({ debugState, currentPlayer, onSelectAction, onClose }) => {
   if (!debugState) return null;
@@ -66,7 +67,7 @@ const DebugPanel = ({ debugState, currentPlayer, onSelectAction, onClose }) => {
               className="debug-action-btn"
             >
               <span>{action[0]} {action[1]}</span>
-              <small>{(action[2] || []).join(' ')}</small>
+              <small>{actionCards(action).join(' ')}</small>
             </button>
           ))}
         </div>

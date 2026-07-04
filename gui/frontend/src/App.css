@@ -155,3 +155,13 @@
     display: none;
   }
 }
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .App {
+    min-height: 100dvh;
+  }
+
+  .App-header {
+    display: none;
+  }
+}

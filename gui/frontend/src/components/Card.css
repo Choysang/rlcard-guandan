@@ -278,7 +278,7 @@
   }
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
   .card-normal {
     width: 58px;
     height: 82px;

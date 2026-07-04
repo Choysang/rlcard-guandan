@@ -122,13 +122,13 @@
   }
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
   .hand-cards-container {
     justify-content: flex-start;
   }
 
   .hand-cards {
-    height: clamp(92px, 25dvh, 112px);
+    height: clamp(96px, 27dvh, 118px);
     padding: 0;
     transform: none;
   }

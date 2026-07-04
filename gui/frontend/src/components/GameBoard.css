@@ -259,7 +259,7 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
   .game-board-shell {
     min-height: 100dvh;
   }
@@ -291,7 +291,8 @@
   }
 
   .debug-toggle {
-    display: none;
+    display: inline-flex;
+    align-items: center;
   }
 
   .top-player-zone {
@@ -312,7 +313,7 @@
   }
 
   .bottom-player-zone {
-    grid-template-rows: minmax(30px, auto) minmax(94px, auto);
+    grid-template-rows: minmax(32px, auto) minmax(102px, auto);
     align-items: start;
     align-content: start;
     row-gap: 2px;
@@ -327,6 +328,7 @@
   }
 
   .action-area {
+    grid-row: 1;
     min-height: 30px;
     align-self: start;
     margin-bottom: 0;
@@ -335,9 +337,16 @@
   }
 
   .current-player-cards {
+    grid-row: 2;
     align-items: flex-start;
-    min-height: 94px;
+    min-height: 102px;
     overflow: visible;
+  }
+
+  .bottom-player-zone > .player-seat-bottom {
+    grid-row: 1;
+    min-height: 0;
+    pointer-events: none;
   }
 }
 
@@ -349,7 +358,7 @@
   }
 
   .bottom-player-zone {
-    grid-template-rows: minmax(28px, auto) minmax(86px, auto);
+    grid-template-rows: minmax(30px, auto) minmax(96px, auto);
   }
 
   .game-board .game-status {
@@ -361,7 +370,7 @@
   }
 
   .current-player-cards {
-    min-height: 86px;
+    min-height: 96px;
   }
 
   .speed-segment button {
