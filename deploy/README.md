@@ -12,8 +12,8 @@ Push to `main`, `master`, `feat/**`, or run the `GUI Container Image`
 workflow manually. The workflow publishes:
 
 - `ghcr.io/choysang/rlcard-guandan-gui:latest` from the default branch
-- `ghcr.io/choysang/rlcard-guandan-gui:feat-web-gui` from this deployment branch
-- `ghcr.io/choysang/rlcard-guandan-gui:<branch-or-tag>`
+- `ghcr.io/choysang/rlcard-guandan-gui:<branch-name>` from pushed branches
+- `ghcr.io/choysang/rlcard-guandan-gui:<tag>` from version tags
 - `ghcr.io/choysang/rlcard-guandan-gui:sha-<commit>`
 
 If the package is private, log in on the server with a GitHub token that has

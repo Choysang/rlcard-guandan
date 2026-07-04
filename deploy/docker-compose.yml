@@ -1,6 +1,6 @@
 services:
   guandan-gui:
-    image: "${GUANDAN_GUI_IMAGE:-ghcr.io/choysang/rlcard-guandan-gui:feat-web-gui}"
+    image: "${GUANDAN_GUI_IMAGE:-ghcr.io/choysang/rlcard-guandan-gui:latest}"
     container_name: guandan-gui
     restart: unless-stopped
     ports:
