@@ -159,9 +159,15 @@
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+  .player-seat {
+    min-width: 0;
+    min-height: 0;
+  }
+
   .seat-meta {
     gap: 6px;
     padding: 4px 6px;
+    border-radius: 7px;
   }
 
   .seat-avatar {
@@ -178,8 +184,103 @@
     font-size: 11px;
   }
 
+  .player-seat-left .seat-meta,
+  .player-seat-right .seat-meta {
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    align-items: center;
+  }
+
+  .player-seat-left .seat-name,
+  .player-seat-right .seat-name {
+    display: none;
+  }
+
+  .seat-card-backs {
+    margin-top: 5px;
+  }
+
   .seat-card-back {
-    width: 18px;
-    height: 26px;
+    width: 17px;
+    height: 25px;
+    border-radius: 3px;
+  }
+
+  .seat-card-backs.horizontal .seat-card-back + .seat-card-back {
+    margin-left: -10px;
+  }
+
+  .seat-card-backs.vertical .seat-card-back + .seat-card-back {
+    margin-top: -17px;
+  }
+
+  .player-seat-top .seat-card-backs.horizontal {
+    justify-content: center;
+    max-width: 134px;
+    overflow: hidden;
+  }
+
+  .player-seat-left .seat-card-backs.vertical,
+  .player-seat-right .seat-card-backs.vertical {
+    max-height: 124px;
+    overflow: hidden;
+    align-items: center;
+  }
+
+  .seat-latest-play {
+    gap: 4px;
+    min-height: 34px;
+  }
+
+  .seat-pass-chip,
+  .seat-action-label {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .seat-play-cards .card + .card {
+    margin-left: -15px;
+  }
+
+  .player-seat-top .seat-latest-play {
+    bottom: -34px;
+  }
+
+  .player-seat-left .seat-latest-play {
+    transform: translate(5px, -50%);
+  }
+
+  .player-seat-right .seat-latest-play {
+    transform: translate(-5px, -50%);
+  }
+
+  .player-seat-bottom .seat-latest-play {
+    top: -38px;
+  }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+  .seat-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .seat-count {
+    font-size: 10px;
+  }
+
+  .player-seat-top .seat-name {
+    font-size: 11px;
+  }
+
+  .seat-card-back {
+    width: 15px;
+    height: 22px;
+  }
+
+  .seat-card-backs.vertical .seat-card-back + .seat-card-back {
+    margin-top: -15px;
   }
 }

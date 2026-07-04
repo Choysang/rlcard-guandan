@@ -314,6 +314,99 @@
   }
 }
 
+@media (max-width: 900px) and (orientation: landscape) {
+  .play-area {
+    justify-content: center;
+  }
+
+  .table-center {
+    max-width: min(520px, 100%);
+    gap: 4px;
+  }
+
+  .table-surface {
+    width: min(100%, 520px);
+    min-height: clamp(78px, 25dvh, 118px);
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(4, 26, 20, 0.32);
+    box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.04);
+    backdrop-filter: none;
+  }
+
+  .game-level {
+    top: 6px;
+    left: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+  }
+
+  .level-icon {
+    font-size: 12px;
+  }
+
+  .level-text {
+    font-size: 10px;
+  }
+
+  .current-cards-display {
+    gap: 5px;
+  }
+
+  .current-play-info {
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+
+  .current-player-name {
+    font-size: 12px;
+  }
+
+  .current-play-type {
+    padding: 2px 8px;
+    font-size: 10px;
+  }
+
+  .current-cards {
+    gap: 2px;
+    max-height: 54px;
+    overflow: visible;
+  }
+
+  .empty-table p {
+    display: none;
+  }
+
+  .table-logo {
+    font-size: 30px;
+    margin-bottom: 0;
+  }
+
+  .turn-indicator-center {
+    right: 8px;
+    bottom: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .game-status-overlay {
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+  .table-surface {
+    min-height: clamp(66px, 24dvh, 96px);
+    padding: 8px 10px;
+  }
+
+  .current-cards {
+    max-height: 48px;
+  }
+}
+
 @media (max-width: 480px) {
   .table-surface {
     padding: 12px;
@@ -337,4 +430,4 @@
     padding: 8px 15px;
     font-size: 14px;
   }
-} 
+}

@@ -260,38 +260,63 @@
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+  .game-board-shell {
+    min-height: 100dvh;
+  }
+
   .game-board {
-    grid-template-rows: 60px minmax(98px, 1fr) 128px;
-    grid-template-columns: 104px minmax(280px, 1fr) 104px;
-    gap: 6px;
-    padding: 6px 8px;
+    grid-template-rows: clamp(42px, 11dvh, 54px) minmax(116px, 1fr) clamp(132px, 34dvh, 164px);
+    grid-template-columns: clamp(66px, 12vw, 86px) minmax(300px, 1fr) clamp(66px, 12vw, 86px);
+    gap: 4px;
+    padding: 4px 6px 2px;
   }
 
   .game-board .game-status {
-    top: 6px;
-    left: 8px;
-    width: 112px;
+    top: 5px;
+    left: 6px;
+    width: 104px;
   }
 
   .board-toolbar {
-    top: 6px;
-    right: 8px;
+    top: 5px;
+    right: 6px;
+    gap: 4px;
   }
 
   .speed-segment button,
   .debug-toggle {
-    min-height: 28px;
-    padding: 0 8px;
-    font-size: 12px;
+    min-height: 26px;
+    padding: 0 7px;
+    font-size: 11px;
   }
 
   .debug-toggle {
     display: none;
   }
 
+  .top-player-zone {
+    align-self: start;
+  }
+
+  .left-player-zone,
+  .right-player-zone {
+    align-self: center;
+  }
+
+  .center-table {
+    align-self: stretch;
+    border-radius: 10px;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+  }
+
   .bottom-player-zone {
-    grid-template-rows: auto minmax(82px, 1fr);
-    padding: 4px 8px 2px;
+    grid-template-rows: minmax(30px, auto) minmax(94px, 1fr);
+    padding: 0 4px;
+    border: 0;
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(6, 20, 18, 0.08), rgba(6, 20, 18, 0.72));
   }
 
   .bottom-player-meta {
@@ -299,6 +324,31 @@
   }
 
   .action-area {
-    min-height: 34px;
+    min-height: 30px;
+    align-self: end;
+    margin-bottom: -2px;
+    z-index: 16;
+  }
+
+  .current-player-cards {
+    align-items: flex-end;
+    min-height: 96px;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+  .game-board {
+    grid-template-rows: 38px minmax(96px, 1fr) clamp(118px, 36dvh, 144px);
+    grid-template-columns: 56px minmax(250px, 1fr) 56px;
+    padding-inline: 4px;
+  }
+
+  .game-board .game-status {
+    width: 96px;
+  }
+
+  .speed-segment button {
+    padding: 0 6px;
   }
 }

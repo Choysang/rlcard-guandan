@@ -419,4 +419,41 @@
 
 .waiting-indicator .spinner-small {
     margin-bottom: 0;
-} 
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    .action-panel-container {
+        gap: 9px;
+        padding: 0;
+    }
+
+    .action-button {
+        min-width: 92px;
+        min-height: 34px;
+        padding: 7px 18px;
+        border-radius: 999px;
+        font-size: 14px;
+        box-shadow: 0 5px 14px rgba(0,0,0,0.28);
+    }
+
+    .action-button:not(:disabled):hover {
+        transform: translateY(-1px);
+    }
+
+    .action-button:not(:disabled):active {
+        transform: translateY(1px) scale(0.99);
+    }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+    .action-panel-container {
+        gap: 7px;
+    }
+
+    .action-button {
+        min-width: 78px;
+        min-height: 31px;
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+}

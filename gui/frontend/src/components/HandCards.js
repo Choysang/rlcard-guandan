@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Card from './Card';
 import './HandCards.css';
 import { applyCardSelection, dragModeForIndex } from '../utils/cardSelection';
@@ -12,16 +12,29 @@ const CARD_WIDTH = 56;
 const MAX_FAN_WIDTH = 760;
 const MAX_STEP = 40; // most spacing (fewest cards)
 const MIN_STEP = 28; // tightest spacing (many cards); > rank-number width
+const MOBILE_MIN_STEP = 22;
 
 const HandCards = ({ cards, selectedCards, setSelected, isInteractive }) => {
   // Drag-to-select state: the mode (select/deselect) is fixed on press from
   // the first card, then applied to every card the pointer sweeps over.
   const dragModeRef = useRef(null);
   const processedRef = useRef(new Set());
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(MAX_FAN_WIDTH);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width || MAX_FAN_WIDTH);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   if (!cards || cards.length === 0) {
     return (
-      <div className="hand-cards-container">
+      <div className="hand-cards-container" ref={containerRef}>
         <div className="hand-cards empty">
           <p>没有手牌</p>
         </div>
@@ -30,8 +43,11 @@ const HandCards = ({ cards, selectedCards, setSelected, isInteractive }) => {
   }
 
   const count = cards.length;
-  const fittedStep = count > 1 ? (MAX_FAN_WIDTH - CARD_WIDTH) / (count - 1) : MAX_STEP;
-  const step = Math.max(MIN_STEP, Math.min(MAX_STEP, fittedStep));
+  const maxFanWidth = Math.min(MAX_FAN_WIDTH, Math.max(280, containerWidth - 8));
+  const minStep = maxFanWidth < 700 ? MOBILE_MIN_STEP : MIN_STEP;
+  const fittedStep = count > 1 ? (maxFanWidth - CARD_WIDTH) / (count - 1) : MAX_STEP;
+  const effectiveMinStep = Math.min(minStep, Math.max(18, fittedStep));
+  const step = Math.max(effectiveMinStep, Math.min(MAX_STEP, fittedStep));
   const totalWidth = (count - 1) * step + CARD_WIDTH;
 
   const applyCard = (index, mode) => {
@@ -72,7 +88,7 @@ const HandCards = ({ cards, selectedCards, setSelected, isInteractive }) => {
   };
 
   return (
-    <div className="hand-cards-container">
+    <div className="hand-cards-container" ref={containerRef}>
       <div
         className="hand-cards"
         data-card-count={count}

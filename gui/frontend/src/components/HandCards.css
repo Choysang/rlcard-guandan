@@ -121,3 +121,45 @@
     height: 92px;
   }
 }
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .hand-cards-container {
+    justify-content: flex-end;
+  }
+
+  .hand-cards {
+    height: clamp(94px, 26dvh, 122px);
+    padding: 0;
+    transform: translateY(4px);
+  }
+
+  .hand-card {
+    top: 8px;
+  }
+
+  .hand-card.selected {
+    transform: translateY(-14px) scale(1.04);
+  }
+
+  .hand-card.interactive:not(.selected):hover {
+    transform: translateY(-10px);
+  }
+
+  .hand-cards-tip {
+    margin-top: 0;
+    font-size: 10px;
+    line-height: 1.2;
+    opacity: 0.72;
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+  .hand-cards {
+    height: clamp(86px, 28dvh, 108px);
+  }
+
+  .hand-cards-tip {
+    display: none;
+  }
+}
