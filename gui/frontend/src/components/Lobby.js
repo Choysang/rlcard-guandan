@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import FeedbackWidget from './FeedbackWidget';
 import GameSetup from './GameSetup';
 import guandanService from '../services/GuandanService';
 import './Lobby.css';
@@ -151,6 +152,10 @@ const Lobby = ({ onJoinRoom, onCreateRoom, loading, isConnected, onReconnect }) 
             </div>
           </div>
         )}
+      </div>
+
+      <div className="lobby-feedback">
+        <FeedbackWidget page="lobby" />
       </div>
     </div>
   );

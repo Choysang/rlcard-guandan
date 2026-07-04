@@ -3,6 +3,7 @@ import './App.css';
 import GameBoard from './components/GameBoard';
 import Lobby from './components/Lobby'; // A new component for joining/creating rooms
 import guandanService from './services/GuandanService'; // Import the instance
+import { buildFeedbackPayload } from './utils/feedback';
 
 function App() {
   const [appState, setAppState] = useState('Lobby'); // Lobby, WaitingInRoom, InGame
@@ -95,6 +96,49 @@ function App() {
       clearInterval(checkConnection);
     };
   }, [setupSocketListeners]);
+
+  useEffect(() => {
+    const sendClientError = (message, stack = '') => {
+      const payload = buildFeedbackPayload({
+        kind: 'client_error',
+        message: message || '前端错误',
+        page: appState === 'InGame' ? 'in_game' : 'lobby',
+        roomId,
+        playerId,
+        participantId,
+        context: {
+          url: window.location.href,
+          path: window.location.pathname,
+          userAgent: navigator.userAgent,
+          viewport: `${window.innerWidth}x${window.innerHeight}`,
+          roomId,
+          playerId,
+          message,
+          stack,
+        },
+      });
+      fetch(`${guandanService.getServerUrl()}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+    };
+
+    const onError = (event) => {
+      sendClientError(event.message, event.error?.stack || '');
+    };
+    const onUnhandledRejection = (event) => {
+      const reason = event.reason;
+      sendClientError(reason?.message || String(reason), reason?.stack || '');
+    };
+
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
+    };
+  }, [appState, roomId, playerId, participantId]);
 
   // 重新连接后重新设置监听器
   const handleReconnect = useCallback(() => {

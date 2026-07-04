@@ -61,6 +61,43 @@ def test_agent_status_endpoint_reports_runtime_metadata():
     assert payload['status']['llm']['runtime_config_required'] is True
 
 
+def test_feedback_endpoint_writes_anonymous_feedback_log(isolated_server):
+    response = server.app.test_client().post('/api/feedback', json={
+        'kind': 'suggestion',
+        'message': '希望移动端按钮再大一点',
+        'page': 'in_game',
+        'roomId': 'ABC123',
+        'playerId': 0,
+        'context': {
+            'url': 'https://guandan.aiwatch.icu/',
+            'apiKey': 'sk-secret',
+        },
+    })
+
+    assert response.status_code == 200
+    assert response.get_json()['ok'] is True
+
+    events = read_log_events(isolated_server)
+    feedback = next(event for event in events
+                    if event['event_type'] == 'feedback')
+    assert feedback['kind'] == 'suggestion'
+    assert feedback['message'] == '希望移动端按钮再大一点'
+    assert feedback['page'] == 'in_game'
+    assert feedback['room_id'] == 'ABC123'
+    assert feedback['player_id'] == 0
+    assert 'sk-secret' not in json.dumps(feedback, ensure_ascii=False)
+
+
+def test_feedback_endpoint_rejects_empty_message():
+    response = server.app.test_client().post('/api/feedback', json={
+        'kind': 'suggestion',
+        'message': '   ',
+    })
+
+    assert response.status_code == 400
+    assert response.get_json()['message'] == '反馈内容不能为空。'
+
+
 def create_started_room(human_ids=(0, 1, 2, 3), debug_enabled=False):
     clients = [make_client()]
     config = {

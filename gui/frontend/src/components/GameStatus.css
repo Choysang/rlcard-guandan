@@ -7,9 +7,10 @@
 .status-dock-button {
   width: 100%;
   min-height: 34px;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
   background: rgba(6, 20, 18, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -23,11 +24,15 @@
 }
 
 .dock-caret {
+  position: absolute;
+  left: 10px;
   font-size: 12px;
   opacity: 0.85;
 }
 
 .dock-alert {
+  position: absolute;
+  right: 8px;
   padding: 2px 7px;
   border-radius: 999px;
   background: #1f7a5c;
@@ -68,20 +73,32 @@
   color: #5a6370;
   font-size: 12px;
   font-weight: 800;
+  text-align: center;
+}
+
+.recent-play-list {
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
 }
 
 .recent-play-row {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: 34px 54px minmax(0, 1fr);
   gap: 8px;
   align-items: center;
   padding: 4px 0;
   font-size: 12px;
 }
 
-.recent-play-row span,
-.remaining-cell span {
+.recent-play-row span {
   color: #697281;
+}
+
+.recent-play-row .play-order {
+  color: #99a2ad;
+  font-size: 11px;
 }
 
 .recent-play-row strong {
@@ -100,42 +117,13 @@
   font-size: 12px;
 }
 
-.remaining-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.remaining-cell {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  padding: 5px 7px;
-  border-radius: 6px;
-  background: #eef3f0;
-  font-size: 12px;
-}
-
-.remaining-cell strong {
-  color: #0e4f3d;
-  font-size: 14px;
-}
-
-.remaining-cell.danger {
-  background: #fff1ea;
-}
-
-.remaining-cell.danger strong {
-  color: #bd3b34;
-}
-
 .status-restart {
   width: 100%;
   margin-top: 10px;
   padding: 7px 12px;
   font-size: 13px;
   border-radius: 8px;
+  text-align: center;
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
@@ -143,6 +131,10 @@
     min-height: 30px;
     padding: 0 8px;
     font-size: 12px;
+  }
+
+  .dock-caret {
+    left: 8px;
   }
 
   .status-details {
@@ -160,6 +152,7 @@
   }
 
   .recent-play-row {
+    grid-template-columns: 30px 48px minmax(0, 1fr);
     padding: 2px 0;
   }
 

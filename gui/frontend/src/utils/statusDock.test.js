@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  formatRemainingCounts,
+  formatPlayHistory,
   formatRecentPlays,
   hasUrgentRoundStatus,
 } from './statusDock.js';
 
-test('formats remaining card counts as compact recorder rows', () => {
-  assert.deepEqual(formatRemainingCounts([12, 8, 3, 20]), [
-    { playerId: 0, label: '玩家0', count: 12, danger: false },
-    { playerId: 1, label: '玩家1', count: 8, danger: false },
-    { playerId: 2, label: '玩家2', count: 3, danger: true },
-    { playerId: 3, label: '玩家3', count: 20, danger: false },
+test('formats full play history as ordered table rows', () => {
+  assert.deepEqual(formatPlayHistory([
+    { player_id: 0, action: ['Single', 'A', ['HA']] },
+    { player_id: 1, action: ['PASS', 'PASS', []] },
+    { player_id: 3, action: ['Bomb', '5', ['H5', 'S5', 'C5', 'D5']] },
+  ]), [
+    { id: 0, order: 1, playerId: 0, label: '玩家0', text: '单张 A' },
+    { id: 1, order: 2, playerId: 1, label: '玩家1', text: '不出', pass: true },
+    { id: 2, order: 3, playerId: 3, label: '玩家3', text: '炸弹 5 · 4张' },
   ]);
 });
 

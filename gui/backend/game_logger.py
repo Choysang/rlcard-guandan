@@ -38,6 +38,9 @@ class GameLogger:
     def new_game_id(self):
         return self._new_id('game')
 
+    def new_feedback_id(self):
+        return self._new_id('feedback')
+
     def write_event(self, event_type, payload):
         event = {
             'event_type': event_type,

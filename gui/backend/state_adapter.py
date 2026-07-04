@@ -36,6 +36,16 @@ def _recent_plays_from_trace(trace):
     return recent
 
 
+def _play_history_from_trace(trace):
+    return [
+        {
+            'player_id': int(pid),
+            'action': action,
+        }
+        for pid, action in (trace or [])
+    ]
+
+
 def _result_fields(env):
     game = env.game
     if not env.is_over():
@@ -79,6 +89,7 @@ def build_play_state(env, human_player_ids, viewer_player_id=None,
         'actions': actions,
         'num_cards_left': current_state.get('num_cards_left', []),
         'trace_length': len(trace),
+        'play_history': _play_history_from_trace(trace),
         'recent_plays': recent_plays,
         'last_actions': current_state.get('last_actions', {}),
         'greaterAction': current_state.get('greaterAction', []),

@@ -61,6 +61,15 @@ game_logger = GameLogger()
 #             'host_sid': sid, 'lock': RLock, ...}
 rooms = {}
 SESSION_ID_RE = re.compile(r'^session_[0-9a-f]{32}$')
+FEEDBACK_KINDS = {'suggestion', 'bug', 'client_error'}
+SENSITIVE_FEEDBACK_KEYS = (
+    'api_key', 'apikey', 'authorization', 'hosttoken', 'password',
+    'resumetoken', 'secret', 'token',
+)
+FEEDBACK_CONTEXT_KEYS = (
+    'url', 'path', 'userAgent', 'viewport', 'roomId', 'playerId',
+    'component', 'message', 'stack',
+)
 
 
 # ----------------------------------------------------------------------
@@ -88,6 +97,38 @@ def _session_id_from(data):
 
 def _new_token(prefix):
     return f'{prefix}_{uuid.uuid4().hex}'
+
+
+def _safe_text(value, limit):
+    if value is None:
+        return ''
+    return str(value).strip()[:limit]
+
+
+def _safe_player_id(value):
+    try:
+        player_id = int(value)
+    except (TypeError, ValueError):
+        return None
+    return player_id if 0 <= player_id <= 3 else None
+
+
+def _is_sensitive_feedback_key(key):
+    normalized = re.sub(r'[^a-z0-9]', '', str(key).lower())
+    return any(marker in normalized for marker in SENSITIVE_FEEDBACK_KEYS)
+
+
+def _sanitize_feedback_context(context):
+    if not isinstance(context, dict):
+        return {}
+    safe = {}
+    for key in FEEDBACK_CONTEXT_KEYS:
+        if key not in context or _is_sensitive_feedback_key(key):
+            continue
+        value = context[key]
+        if isinstance(value, (str, int, float, bool)) or value is None:
+            safe[key] = _safe_text(value, 2000)
+    return safe
 
 
 def _token_from(data, key):
@@ -332,6 +373,32 @@ def list_agents():
 @app.route('/api/agents/status')
 def list_agent_status():
     return jsonify({'agents': available_agents(), 'status': agent_runtime_status()})
+
+
+@app.post('/api/feedback')
+def submit_feedback():
+    data = request.get_json(silent=True) or {}
+    message = _safe_text(data.get('message'), 1200)
+    if not message:
+        return jsonify({'ok': False, 'message': '反馈内容不能为空。'}), 400
+
+    kind = _safe_text(data.get('kind'), 32)
+    if kind not in FEEDBACK_KINDS:
+        kind = 'suggestion'
+
+    feedback_id = game_logger.new_feedback_id()
+    game_logger.write_event('feedback', {
+        'feedback_id': feedback_id,
+        'kind': kind,
+        'message': message,
+        'page': _safe_text(data.get('page'), 64) or 'unknown',
+        'room_id': _safe_text(data.get('roomId') or data.get('room_id'), 64),
+        'player_id': _safe_player_id(data.get('playerId')),
+        'participant_id': _safe_text(data.get('participantId'), 80),
+        'context': _sanitize_feedback_context(data.get('context')),
+        'account_id': None,
+    })
+    return jsonify({'ok': True, 'feedbackId': feedback_id})
 
 
 # ----------------------------------------------------------------------

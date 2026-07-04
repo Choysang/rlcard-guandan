@@ -37,6 +37,21 @@ def test_play_state_only_includes_actions_for_acting_viewer():
     assert waiting['actions'] == []
 
 
+def test_play_state_includes_safe_full_play_history():
+    env = make_env()
+    current = env.get_player_id()
+    action = env.get_state(current)['actions'][0]
+
+    env.step(action)
+    state = build_play_state(env, human_player_ids=[current],
+                             viewer_player_id=current)
+
+    assert state['play_history'][-1] == {
+        'player_id': current,
+        'action': action,
+    }
+
+
 def test_debug_state_exposes_all_hands_and_timings():
     env = make_env()
     debug = build_debug_state(

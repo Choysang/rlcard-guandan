@@ -1,0 +1,135 @@
+.feedback-widget {
+  position: relative;
+  z-index: 40;
+}
+
+.feedback-trigger {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(6, 20, 18, 0.72);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feedback-trigger:hover {
+  background: rgba(13, 43, 36, 0.84);
+}
+
+.feedback-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.feedback-kind-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1px solid #d8dde6;
+  border-radius: 8px;
+}
+
+.feedback-kind-row button {
+  min-height: 30px;
+  border: 0;
+  background: #f2f5f8;
+  color: #4c5563;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feedback-kind-row button + button {
+  border-left: 1px solid #d8dde6;
+}
+
+.feedback-kind-row button.active {
+  background: #1f7a5c;
+  color: #fff;
+}
+
+.feedback-panel textarea {
+  width: 100%;
+  min-height: 96px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid #d8dde6;
+  border-radius: 8px;
+  box-sizing: border-box;
+  resize: vertical;
+  color: #1f2933;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.feedback-actions button {
+  min-height: 32px;
+  min-width: 92px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f7a5c;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feedback-actions button:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.feedback-state {
+  min-height: 18px;
+  color: #687384;
+  font-size: 12px;
+}
+
+.feedback-state.sent {
+  color: #1f7a5c;
+}
+
+.feedback-state.failed {
+  color: #bd3b34;
+}
+
+.lobby-feedback {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.board-toolbar .feedback-panel {
+  top: calc(100% + 8px);
+  right: 0;
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .feedback-trigger {
+    min-height: 28px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  .feedback-panel {
+    width: 238px;
+    max-height: calc(100vh - 54px);
+    overflow: auto;
+  }
+}

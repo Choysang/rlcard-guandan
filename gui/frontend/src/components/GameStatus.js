@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import './GameStatus.css';
 import {
+  formatPlayHistory,
   formatRecentPlays,
-  formatRemainingCounts,
   hasUrgentRoundStatus,
 } from '../utils/statusDock';
 
@@ -14,8 +14,10 @@ const GameStatus = ({ gameState, currentPlayer, onRestart }) => {
 
   if (!gameState) return null;
 
-  const recentPlays = formatRecentPlays(gameState.recent_plays).slice(-4);
-  const remainingCounts = formatRemainingCounts(gameState.num_cards_left);
+  const playHistory = formatPlayHistory(gameState.play_history).slice().reverse();
+  const recentPlays = playHistory.length
+    ? playHistory
+    : formatRecentPlays(gameState.recent_plays).slice(-4).reverse();
   const urgent = hasUrgentRoundStatus(gameState);
 
   return (
@@ -40,27 +42,16 @@ const GameStatus = ({ gameState, currentPlayer, onRestart }) => {
         <div className="status-details">
           <section className="status-section">
             <div className="status-section-title">最近出牌</div>
-            <div className="recent-play-list">
+            <div className="recent-play-list" role="log" aria-label="本局出牌记录">
               {recentPlays.length ? recentPlays.map((play) => (
-                <div key={play.playerId} className={`recent-play-row ${play.pass ? 'pass' : ''}`}>
+                <div key={play.id ?? play.playerId} className={`recent-play-row ${play.pass ? 'pass' : ''}`}>
+                  <span className="play-order">{play.order ? `#${play.order}` : ''}</span>
                   <span>{play.label}</span>
                   <strong>{play.text}</strong>
                 </div>
               )) : (
                 <div className="status-empty">暂无出牌</div>
               )}
-            </div>
-          </section>
-
-          <section className="status-section">
-            <div className="status-section-title">余牌</div>
-            <div className="remaining-grid">
-              {remainingCounts.map((item) => (
-                <div key={item.playerId} className={`remaining-cell ${item.danger ? 'danger' : ''}`}>
-                  <span>{item.label}</span>
-                  <strong>{item.count}</strong>
-                </div>
-              ))}
             </div>
           </section>
 

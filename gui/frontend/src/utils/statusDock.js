@@ -14,14 +14,6 @@ const ACTION_LABELS = {
 export const hasUrgentRoundStatus = (gameState = {}) =>
   Boolean(gameState.is_over || gameState.round_completed);
 
-export const formatRemainingCounts = (counts = []) =>
-  counts.map((count, playerId) => ({
-    playerId,
-    label: `玩家${playerId}`,
-    count,
-    danger: Number(count) > 0 && Number(count) <= 5,
-  }));
-
 export const formatActionText = (action) => {
   if (!Array.isArray(action) || action.length === 0) {
     return '';
@@ -41,6 +33,23 @@ export const formatRecentPlays = (recentPlays = {}) =>
     .map(([playerId, action]) => {
       const pass = Array.isArray(action) && action[0] === 'PASS';
       return {
+        playerId: Number(playerId),
+        label: `玩家${playerId}`,
+        text: formatActionText(action),
+        ...(pass ? { pass: true } : {}),
+      };
+    })
+    .filter((item) => item.text);
+
+export const formatPlayHistory = (history = []) =>
+  history
+    .map((entry, index) => {
+      const playerId = entry?.player_id ?? entry?.playerId ?? entry?.[0];
+      const action = entry?.action ?? entry?.[1];
+      const pass = Array.isArray(action) && action[0] === 'PASS';
+      return {
+        id: index,
+        order: index + 1,
         playerId: Number(playerId),
         label: `玩家${playerId}`,
         text: formatActionText(action),

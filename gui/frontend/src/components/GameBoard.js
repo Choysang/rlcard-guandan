@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ActionPanel from './ActionPanel';
 import DebugPanel from './DebugPanel';
+import FeedbackWidget from './FeedbackWidget';
 import './GameBoard.css';
 import GameStatus from './GameStatus';
 import HandCards from './HandCards';
@@ -190,6 +191,12 @@ const GameBoard = ({
                 调测
               </button>
             )}
+            <FeedbackWidget
+              page="in_game"
+              roomId={roomId}
+              playerId={thisPlayerId}
+              participantId={participantId}
+            />
           </div>
 
           <div className="top-player-zone">
