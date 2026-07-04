@@ -127,15 +127,6 @@
   flex-direction: row-reverse;
 }
 
-.player-seat-right .seat-play-cards {
-  flex-direction: row-reverse;
-}
-
-.player-seat-right .seat-play-cards .card + .card {
-  margin-left: 0;
-  margin-right: -18px;
-}
-
 .player-seat-bottom .seat-latest-play {
   left: 50%;
   top: -48px;

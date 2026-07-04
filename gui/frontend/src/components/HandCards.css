@@ -124,17 +124,17 @@
 
 @media (max-width: 900px) and (orientation: landscape) {
   .hand-cards-container {
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 
   .hand-cards {
-    height: clamp(94px, 26dvh, 122px);
+    height: clamp(92px, 25dvh, 112px);
     padding: 0;
-    transform: translateY(4px);
+    transform: none;
   }
 
   .hand-card {
-    top: 8px;
+    top: 2px;
   }
 
   .hand-card.selected {
@@ -156,7 +156,7 @@
 
 @media (max-width: 720px) and (orientation: landscape) {
   .hand-cards {
-    height: clamp(86px, 28dvh, 108px);
+    height: clamp(84px, 28dvh, 100px);
   }
 
   .hand-cards-tip {
