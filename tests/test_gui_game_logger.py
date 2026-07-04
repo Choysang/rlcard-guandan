@@ -58,6 +58,52 @@ def test_logger_action_event_keeps_action_and_timings(tmp_path):
     assert line['timings']['env_step_ms'] == 0.2
 
 
+def test_logger_decision_snapshot_uses_schema_v2(tmp_path):
+    logger = GameLogger(log_dir=tmp_path,
+                        clock=lambda: '2026-07-04T00:00:00Z')
+
+    logger.log_decision_snapshot({
+        'room_id': 'ROOM01',
+        'game_id': 'game-1',
+        'decision_id': 'decision-1',
+        'player_id': 0,
+        'team_id': 0,
+        'teammate_id': 2,
+        'is_human': True,
+        'agent_types': {'0': 'human', '1': 'perfectdan'},
+        'state': {'current_hand': ['S3']},
+        'legal_actions': [['Single', '3', ['S3']]],
+        'chosen_action_index': 0,
+        'chosen_action': ['Single', '3', ['S3']],
+        'visibility': 'public',
+    })
+
+    line = read_lines(tmp_path / 'guandan_gui.jsonl')[0]
+    assert line['event_type'] == 'decision_snapshot'
+    assert line['schema_version'] == 2
+    assert line['timestamp'] == '2026-07-04T00:00:00Z'
+    assert line['chosen_action'] == ['Single', '3', ['S3']]
+
+
+def test_logger_game_outcome_uses_schema_v2(tmp_path):
+    logger = GameLogger(log_dir=tmp_path,
+                        clock=lambda: '2026-07-04T00:00:00Z')
+
+    logger.log_game_outcome(
+        room_id='ROOM01',
+        game_id='game-1',
+        winner_team=0,
+        finished_players=[0, 2, 1, 3],
+        agent_types={'0': 'human', '1': 'perfectdan'},
+    )
+
+    line = read_lines(tmp_path / 'guandan_gui.jsonl')[0]
+    assert line['event_type'] == 'game_outcome'
+    assert line['schema_version'] == 2
+    assert line['winner_team'] == 0
+    assert line['finished_players'] == [0, 2, 1, 3]
+
+
 def test_id_helpers_generate_prefixed_values(tmp_path):
     logger = GameLogger(log_dir=tmp_path)
 

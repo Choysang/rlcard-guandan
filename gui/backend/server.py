@@ -265,6 +265,28 @@ def _log_last_action(room_id):
     )
 
 
+def _log_last_decision_snapshot(room_id):
+    room = rooms.get(room_id)
+    if not room:
+        return
+    game = room['game']
+    snapshot = game.last_decision_snapshot
+    if not snapshot:
+        return
+    player_id = snapshot['player_id']
+    participant_id, session_id = _identity_for_player(room, player_id)
+    snapshot = dict(snapshot)
+    snapshot.update({
+        'room_id': room_id,
+        'game_id': game.game_id,
+        'participant_id': participant_id,
+        'session_id': session_id,
+        'account_id': None,
+    })
+    game_logger.log_decision_snapshot(snapshot)
+    game.last_decision_snapshot = None
+
+
 def _log_match_summary(room_id):
     room = rooms.get(room_id)
     if not room or room.get('summary_logged'):
@@ -274,14 +296,22 @@ def _log_match_summary(room_id):
         return
     room['summary_logged'] = True
     result = list(getattr(game.env.game.round, 'result', []))
+    finished_players = [p for p in result if p >= 0]
     game_logger.write_event('match_summary', {
         'room_id': room_id,
         'game_id': game.game_id,
         'winner_team': game.env.game.winner_team,
-        'finished_players': [p for p in result if p >= 0],
+        'finished_players': finished_players,
         'participants': _participants_snapshot(room),
         'account_id': None,
     })
+    game_logger.log_game_outcome(
+        room_id=room_id,
+        game_id=game.game_id,
+        winner_team=game.env.game.winner_team,
+        finished_players=finished_players,
+        agent_types=game.agent_types,
+    )
 
 
 def _drive_ai(room_id):
@@ -636,6 +666,7 @@ def handle_player_action(data):
             emit('error', {'message': f'服务器错误: {exc}'})
             return
 
+        _log_last_decision_snapshot(room_id)
         _log_last_action(room_id)
         _emit_state_to_room(room_id)
         _log_match_summary(room_id)

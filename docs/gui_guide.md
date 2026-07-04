@@ -190,13 +190,29 @@ creation from public HTTP origins; use an HTTPS domain before entering keys.
   `[combo_type, key_rank, [cards]]`.
 * **Anonymous logging.** The backend appends JSONL events to
   `logs/gui/guandan_gui.jsonl` by default. Every event carries
-  `schema_version: 1`. Player-scoped events carry generated
+  `schema_version` metadata. Existing operational events use schema version 1;
+  human expert data events `decision_snapshot` and `game_outcome` use schema
+  version 2. Player-scoped events carry generated
   `participant_id`, server-shaped `session_id`, `game_id` and
   `account_id: null`; room-scoped events carry a `participants` list instead
   of pretending to belong to one player. Timing fields include state
   construction, AI decision, environment step, broadcast, and AI-loop timings
   when available. Browser-held `resumeToken` and `hostToken` are not logged.
   Free-form fields such as nicknames are not persisted.
+* **Human expert dataset export.** Each validated human action logs a
+  public-information `decision_snapshot`, and each completed match logs a
+  `game_outcome`. To export winning human decisions against `danzero_plus` or
+  `perfectdan`:
+
+  ```bash
+  python examples/export_human_expert_dataset.py \
+    --input logs/gui/guandan_gui.jsonl \
+    --output dataset/human_expert.jsonl
+  ```
+
+  The public exporter uses only the acting player's visible state, legal
+  actions and final outcome. Debug-only hidden hands are not included in
+  `question`.
 * **Deployment boundary.** Rooms are stored in process memory. The current
   server is suitable for local/LAN testing and single-process deployment.
   Multi-worker or multi-instance production needs external room/session

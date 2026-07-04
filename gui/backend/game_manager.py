@@ -22,7 +22,8 @@ import uuid
 import numpy as np
 
 import guandan_rlcard
-from .agents import build_agents
+from .agents import build_agents, normalize_agent_name
+from .expert_data import build_decision_snapshot
 from .state_adapter import (
     build_debug_state,
     build_play_state,
@@ -42,6 +43,8 @@ class Game:
         self.player_config = sanitize_room_config(player_config)
         self.human_player_ids = list(
             self.player_config.get('human_player_ids', [0]))
+        self.agent_types = self._agent_types_for_logging(
+            self.player_config, self.human_player_ids)
         self.seed = seed
         self.env = None
         self.agents = None
@@ -53,6 +56,20 @@ class Game:
         self.game_id = player_config.get('game_id') or f'game_{uuid.uuid4().hex}'
         self.last_timings = {}
         self.last_action_meta = None
+        self.last_decision_snapshot = None
+
+    @staticmethod
+    def _agent_types_for_logging(player_config, human_player_ids):
+        raw_agent_types = dict((player_config or {}).get('agentTypes') or {})
+        human_ids = {int(pid) for pid in human_player_ids}
+        agent_types = {}
+        for pid in range(4):
+            if pid in human_ids:
+                agent_types[str(pid)] = 'human'
+                continue
+            raw_name = raw_agent_types.get(str(pid), raw_agent_types.get(pid))
+            agent_types[str(pid)] = normalize_agent_name(raw_name or 'random')
+        return agent_types
 
     # ------------------------------------------------------------------
     # Setup
@@ -139,6 +156,7 @@ class Game:
             ValueError: if the seat is not human, not on turn, or the
                 action is not currently legal.
         """
+        self.last_decision_snapshot = None
         if player_id not in self.human_player_ids:
             raise ValueError(f'玩家 {player_id} 不是人类玩家。')
         current = self.env.get_player_id()
@@ -150,6 +168,14 @@ class Game:
         if action is None:
             raise ValueError('动作不合法或已过期，请重新选择。')
 
+        self.last_decision_snapshot = build_decision_snapshot(
+            env=self.env,
+            player_id=player_id,
+            legal_actions=legal_actions,
+            chosen_action=action,
+            agent_types=self.agent_types,
+            decision_id=f'decision_{uuid.uuid4().hex}',
+        )
         logger.info('Human seat %s plays %s', player_id, action)
         self._time_call('env_step_ms', lambda: self.env.step(action))
         self.last_action_meta = {

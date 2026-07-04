@@ -255,6 +255,17 @@ PY
 
 日志不会写入 API Key、hostToken、resumeToken 等敏感字段。
 
+导出战胜强模型的人类专家决策样本：
+
+```bash
+python examples/export_human_expert_dataset.py \
+  --input logs/gui/guandan_gui.jsonl \
+  --output dataset/human_expert.jsonl
+```
+
+导出的 JSONL 每行包含 `question`、`sentence`、合法动作、最终动作和来源信息。
+默认只使用玩家当时可见的公开状态，不会把调测模式里的隐藏手牌写入训练样本。
+
 ## 文档索引
 
 - GUI 使用说明：[docs/gui_guide.md](docs/gui_guide.md)
@@ -381,6 +392,21 @@ weights under `/opt/guandan-gui/weights`.
 
 LLM agents do not use local weights. Users enter model name, Base URL and API
 Key when creating a room. Use HTTPS before entering keys on a public site.
+
+### Human Expert Data Export
+
+The GUI logs public-information human decisions and match outcomes. To export
+winning human decisions against `danzero_plus` or `perfectdan`:
+
+```bash
+python examples/export_human_expert_dataset.py \
+  --input logs/gui/guandan_gui.jsonl \
+  --output dataset/human_expert.jsonl
+```
+
+Each JSONL row contains `question`, `sentence`, legal actions, the logged
+human action, and source metadata. Public exports exclude debug-only hidden
+hands.
 
 ### More Docs
 

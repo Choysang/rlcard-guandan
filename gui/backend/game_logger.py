@@ -41,10 +41,10 @@ class GameLogger:
     def new_feedback_id(self):
         return self._new_id('feedback')
 
-    def write_event(self, event_type, payload):
+    def write_event(self, event_type, payload, schema_version=1):
         event = {
             'event_type': event_type,
-            'schema_version': 1,
+            'schema_version': schema_version,
             'timestamp': self.clock(),
         }
         event.update(payload)
@@ -71,3 +71,23 @@ class GameLogger:
             'num_cards_left': list(num_cards_left),
             'timings': dict(timings or {}),
         })
+
+    def log_decision_snapshot(self, snapshot):
+        payload = dict(snapshot)
+        payload.pop('event_type', None)
+        payload.pop('schema_version', None)
+        payload.pop('timestamp', None)
+        self.write_event('decision_snapshot', payload, schema_version=2)
+
+    def log_game_outcome(self, room_id, game_id, winner_team,
+                         finished_players, agent_types):
+        self.write_event('game_outcome', {
+            'room_id': room_id,
+            'game_id': game_id,
+            'winner_team': winner_team,
+            'finished_players': list(finished_players or []),
+            'agent_types': {
+                str(player_id): str(agent_type)
+                for player_id, agent_type in dict(agent_types or {}).items()
+            },
+        }, schema_version=2)

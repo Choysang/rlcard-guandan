@@ -66,3 +66,42 @@ def test_init_game_leaves_auto_drive_to_server(monkeypatch):
     game.init_game()
 
     assert called is False
+
+
+def test_agent_types_for_logging_do_not_mutate_public_config():
+    config = {
+        'human_player_ids': [0],
+        'agentTypes': {'1': 'ppo', '2': 'base7'},
+    }
+    game = Game(config, seed=7)
+
+    assert game.player_config['agentTypes'] == {'1': 'ppo', '2': 'base7'}
+    assert game.agent_types == {
+        '0': 'human',
+        '1': 'perfectdan',
+        '2': 'base7',
+        '3': 'random',
+    }
+
+
+def test_perform_action_captures_human_decision_snapshot():
+    game = Game({
+        'human_player_ids': [0],
+        'agentTypes': {'1': 'random', '2': 'random', '3': 'random'},
+    }, seed=7)
+    game.init_game()
+    while not game.is_waiting_for_human():
+        assert game.step_one_ai() is True
+
+    player_id = game.current_player()
+    legal_action = game.env.get_state(player_id)['actions'][0]
+
+    game.perform_action(player_id, legal_action)
+
+    snapshot = game.last_decision_snapshot
+    assert snapshot['event_type'] == 'decision_snapshot'
+    assert snapshot['schema_version'] == 2
+    assert snapshot['player_id'] == player_id
+    assert snapshot['chosen_action'] == legal_action
+    assert snapshot['agent_types']['0'] == 'human'
+    assert snapshot['agent_types']['1'] == 'random'

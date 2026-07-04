@@ -310,6 +310,49 @@ def test_rejoin_does_not_restart_started_room(isolated_server):
     assert [event['event_type'] for event in events].count('game_started') == 1
 
 
+def test_human_action_logs_decision_snapshot(isolated_server):
+    room_id, clients = create_started_room()
+    current, action = current_legal_action(room_id)
+    player_client = clients[current]
+
+    player_client.emit('player_action', {
+        'roomId': room_id,
+        'playerId': current,
+        'action': action,
+    })
+
+    events = read_log_events(isolated_server)
+    snapshots = [
+        event for event in events
+        if event['event_type'] == 'decision_snapshot'
+    ]
+    assert len(snapshots) == 1
+    assert snapshots[0]['schema_version'] == 2
+    assert snapshots[0]['participant_id'].startswith('participant_')
+    assert snapshots[0]['chosen_action'] == action
+    assert snapshots[0]['agent_types'][str(current)] == 'human'
+
+
+def test_completed_match_logs_game_outcome(monkeypatch, isolated_server):
+    room_id, _clients = create_started_room()
+    room = server.rooms[room_id]
+    room['game'].env.game.winner_team = 0
+    room['game'].env.game.round.result = [0, 2, 1, 3]
+    monkeypatch.setattr(room['game'], 'is_over', lambda: True)
+
+    server._log_match_summary(room_id)
+
+    events = read_log_events(isolated_server)
+    outcomes = [
+        event for event in events
+        if event['event_type'] == 'game_outcome'
+    ]
+    assert len(outcomes) == 1
+    assert outcomes[0]['schema_version'] == 2
+    assert outcomes[0]['winner_team'] == 0
+    assert outcomes[0]['finished_players'] == [0, 2, 1, 3]
+
+
 def test_room_created_log_uses_anonymous_whitelisted_config(isolated_server):
     client = make_client()
     client.emit('create_room', {
