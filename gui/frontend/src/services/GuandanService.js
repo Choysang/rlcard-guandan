@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client';
+import { normalizeServerUrl } from './serverUrl.js';
 
 // 存储键名
 const STORAGE_KEY = 'guandan_server_url';
@@ -24,8 +25,16 @@ class GuandanService {
   errorCallback = null;
 
   constructor() {
-    // 从 localStorage 读取保存的服务器地址，或使用默认值
-    this.serverUrl = localStorage.getItem(STORAGE_KEY) || getDefaultServerUrl();
+    const defaultUrl = getDefaultServerUrl();
+    const storedUrl = localStorage.getItem(STORAGE_KEY);
+    try {
+      this.serverUrl = normalizeServerUrl(storedUrl || defaultUrl, defaultUrl);
+    } catch {
+      this.serverUrl = defaultUrl;
+    }
+    if (storedUrl && storedUrl !== this.serverUrl) {
+      localStorage.setItem(STORAGE_KEY, this.serverUrl);
+    }
   }
 
   // 获取当前服务器地址
@@ -69,14 +78,7 @@ class GuandanService {
 
   // 设置服务器地址并保存
   setServerUrl(url) {
-    // 确保 URL 格式正确
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'http://' + url;
-    }
-    // 如果没有端口，添加默认端口
-    if (!url.match(/:\d+$/)) {
-      url = url + ':5000';
-    }
+    url = normalizeServerUrl(url, getDefaultServerUrl());
     this.serverUrl = url;
     localStorage.setItem(STORAGE_KEY, url);
     return url;
